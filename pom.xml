@@ -22,7 +22,7 @@ limitations under the License.
     <groupId>net.java.dev.jets3t</groupId>
     <artifactId>jets3t</artifactId>
     <packaging>jar</packaging>
-    <version>0.9.5-SNAPSHOT</version>
+    <version>0.9.4.3</version>
     <description>Toolkit for Amazon S3, Amazon CloudFront, and Google Storage Service.</description>
     <name>JetS3t</name>
     <url>https://bitbucket.org/jmurty/jets3t/overview</url>
@@ -67,6 +67,13 @@ limitations under the License.
         <version>7</version>
     </parent>
     <build>
+        <extensions>
+            <extension>
+                <groupId>org.springframework.build</groupId>
+                <artifactId>aws-maven</artifactId>
+                <version>5.0.0.RELEASE</version>
+            </extension>
+        </extensions>
         <sourceDirectory>src</sourceDirectory>
         <testSourceDirectory>test</testSourceDirectory>
         <resources>
@@ -362,6 +369,18 @@ limitations under the License.
         </plugins>
     </reporting>
     
+    <distributionManagement>
+        <repository>
+            <id>maven.cyberduck.io-release</id>
+            <url>s3://repo.maven.cyberduck.io/releases/</url>
+            <layout>default</layout>
+        </repository>
+        <snapshotRepository>
+            <id>maven.cyberduck.io-snapshot</id>
+            <url>s3://repo.maven.cyberduck.io/snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
+
     <profiles>
         <!-- Prevent GPG signing of generated artifacts unless explicitly requested -->    
         <profile>
