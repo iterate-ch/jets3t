@@ -29,7 +29,6 @@ import java.text.ParseException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.lang.IllegalArgumentException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -374,34 +373,14 @@ public class StorageObject extends BaseStorageItem implements Cloneable {
      * returned instead. If both last modified and creation dates are unavailable, null is returned.
      */
     public Date getLastModifiedDate() {
-        Object m = getMetadata(METADATA_HEADER_LAST_MODIFIED_DATE);
-        if (m == null) {
-            return getDate();            
-        }   
-        else if(m instanceof Date) {
-            return (Date) m;
-        }        
-        else {
-            log.error("Unknown type :" + m);
-            throw new IllegalArgumentException("Invalid metadata");
+        Date lastModifiedDate = (Date) getMetadata(METADATA_HEADER_LAST_MODIFIED_DATE);
+        if (lastModifiedDate == null) {
+            // Perhaps this object has just been created, in which case we can use the Date metadata.
+            lastModifiedDate = (Date) getMetadata(METADATA_HEADER_DATE);
         }
+        return lastModifiedDate;
     }
 
-    public Date getDate() {
-        Object m = getMetadata(METADATA_HEADER_DATE);
-        if (m == null) {
-            log.error("Null: date getting METADATA_HEADER_DATE(" + METADATA_HEADER_DATE + ")");
-            throw new IllegalArgumentException("Invalid metadata");
-        }
-        else if(m instanceof Date) {
-            return (Date) m;
-        }
-        else {
-            log.error("Invalid header date:" + m);            
-            throw new IllegalArgumentException("Invalid metadata");
-        }
-    }
-    
     /**
      * Set this object's last modified date based on information returned from the service.
      * This method should only by used internally by code that reads the last modified date
@@ -613,9 +592,9 @@ public class StorageObject extends BaseStorageItem implements Cloneable {
             || METADATA_HEADER_DATE.equals(name))
         {
             try {
-                Date parsedDate;
+                Date parsedDate = null;
                 // We shouldn't get ISO 8601 dates here but let's be paranoid...
-                if (value.contains("-")) {
+                if (value.toString().indexOf("-") >= 0) {
                     parsedDate = ServiceUtils.parseIso8601Date(value);
                 } else {
                     parsedDate = ServiceUtils.parseRfc822Date(value);
@@ -643,13 +622,13 @@ public class StorageObject extends BaseStorageItem implements Cloneable {
         for (Map.Entry<String, Object> entry: metadata.entrySet()) {
             Object value = entry.getValue();
             if (value instanceof String) {
-                addMetadata(entry.getKey(), (String) value);
+                addMetadata(entry.getKey().toString(), (String) value);
             } else if (value instanceof Date) {
-                addMetadata(entry.getKey(), (Date) value);
+                addMetadata(entry.getKey().toString(), (Date) value);
             } else if (value instanceof S3Owner) {
-                addMetadata(entry.getKey(), (S3Owner) value);
+                addMetadata(entry.getKey().toString(), (S3Owner) value);
             } else {
-                addMetadata(entry.getKey(), value);
+                addMetadata(entry.getKey().toString(), value);
             }
         }
     }
@@ -701,8 +680,12 @@ public class StorageObject extends BaseStorageItem implements Cloneable {
         }
         // Recognize legacy JetS3t directory place-holder objects, only gives
         // accurate results if an object's metadata is populated.
-                return this.getContentLength() == 0
-                        && Mimetypes.MIMETYPE_JETS3T_DIRECTORY.equals(this.getContentType());
+        if (this.getContentLength() == 0
+            && Mimetypes.MIMETYPE_JETS3T_DIRECTORY.equals(this.getContentType()))
+        {
+            return true;
+        }
+        return false;
     }
 
     /**
