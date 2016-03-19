@@ -2216,7 +2216,7 @@ public abstract class RestStorageService extends StorageService implements JetS3
                 ifMatchTags, ifNoneMatchTags, byteRangeStart, byteRangeEnd, versionId);
     }
 
-    private StorageObject getObjectImpl(boolean headOnly, String bucketName, String objectKey,
+    protected StorageObject getObjectImpl(boolean headOnly, String bucketName, String objectKey,
                                         Calendar ifModifiedSince, Calendar ifUnmodifiedSince, String[] ifMatchTags,
                                         String[] ifNoneMatchTags, Long byteRangeStart, Long byteRangeEnd, String versionId)
             throws ServiceException {
@@ -2228,6 +2228,16 @@ public abstract class RestStorageService extends StorageService implements JetS3
         Map<String, Object> requestHeaders = new HashMap<String, Object>();
         Map<String, String> requestParameters = new HashMap<String, String>();
 
+        return getObjectImpl(headOnly, bucketName, objectKey, ifModifiedSince, ifUnmodifiedSince,
+                ifMatchTags, ifNoneMatchTags, byteRangeStart, byteRangeEnd, versionId, requestHeaders, requestParameters);
+    }
+
+    protected StorageObject getObjectImpl(boolean headOnly, String bucketName, String objectKey,
+                                          Calendar ifModifiedSince, Calendar ifUnmodifiedSince,
+                                          String[] ifMatchTags, String[] ifNoneMatchTags,
+                                          Long byteRangeStart, Long byteRangeEnd, String versionId,
+                                          Map<String, Object> requestHeaders,
+                                          Map<String, String> requestParameters) throws ServiceException {
         if(ifModifiedSince != null) {
             requestHeaders.put("If-Modified-Since",
                     ServiceUtils.formatRfc822Date(ifModifiedSince.getTime()));
