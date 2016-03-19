@@ -36,6 +36,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.util.EntityUtils;
@@ -661,12 +662,10 @@ public class RestS3Service extends S3Service {
 
         try {
             performRestPut(bucketName, null, metadata, requestParameters,
-                new StringEntity(policyDocument, "text/plain", Constants.DEFAULT_ENCODING),
+                new StringEntity(policyDocument, ContentType.create("text/plain", Constants.DEFAULT_ENCODING)),
                 true);
         } catch (ServiceException se) {
             throw new S3ServiceException(se);
-        } catch (UnsupportedEncodingException e) {
-            throw new S3ServiceException("Unable to encode LoggingStatus XML document", e);
         }
     }
 
@@ -725,12 +724,10 @@ public class RestS3Service extends S3Service {
                 "</RequestPaymentConfiguration>";
 
             performRestPut(bucketName, null, metadata, requestParameters,
-                new StringEntity(xml, "text/plain", Constants.DEFAULT_ENCODING),
+                new StringEntity(xml, ContentType.create("text/plain", Constants.DEFAULT_ENCODING)),
                 true);
         } catch (ServiceException se) {
             throw new S3ServiceException(se);
-        } catch (UnsupportedEncodingException e) {
-            throw new S3ServiceException("Unable to encode RequestPaymentConfiguration XML document", e);
         }
     }
 
@@ -809,7 +806,7 @@ public class RestS3Service extends S3Service {
         try {
             // Always disable live MD5 hash check for MultiPart Part uploads, since the ETag
             // hash value returned by S3 is not an MD5 hash of the uploaded data anyway (Issue #141).
-            boolean isLiveMD5HashingRequired = false;
+            final boolean isLiveMD5HashingRequired = false;
 
             HttpEntity requestEntity = null;
             if (object.getDataInputStream() != null) {
@@ -923,7 +920,7 @@ public class RestS3Service extends S3Service {
 
             // CopyPartResult XML response does not include part number or size info.
             // We can compensate for the lack of part number, but cannot for size...
-            return new MultipartPart(partNumber, part.getLastModified(), part.getEtag(), -1l);
+            return new MultipartPart(partNumber, part.getLastModified(), part.getEtag(), -1L);
         } catch (ServiceException se) {
             throw new S3ServiceException(se);
         }
@@ -1187,12 +1184,10 @@ public class RestS3Service extends S3Service {
 
         try {
             performRestPut(bucketName, null, metadata, requestParameters,
-                new StringEntity(xml, "text/plain", Constants.DEFAULT_ENCODING),
+                new StringEntity(xml, ContentType.create("text/plain", Constants.DEFAULT_ENCODING)),
                 true);
         } catch (ServiceException se) {
             throw new S3ServiceException(se);
-        } catch (UnsupportedEncodingException e) {
-            throw new S3ServiceException("Unable to encode XML document", e);
         }
     }
 
@@ -1240,12 +1235,10 @@ public class RestS3Service extends S3Service {
 
         try {
             performRestPut(bucketName, null, metadata, requestParameters,
-                new StringEntity(xml, "text/plain", Constants.DEFAULT_ENCODING),
+                new StringEntity(xml, ContentType.create("text/plain", Constants.DEFAULT_ENCODING)),
                 true);
         } catch (ServiceException se) {
             throw new S3ServiceException(se);
-        } catch (UnsupportedEncodingException e) {
-            throw new S3ServiceException("Unable to encode XML document", e);
         }
     }
 
@@ -1300,13 +1293,11 @@ public class RestS3Service extends S3Service {
         try {
             HttpResponse httpResponse = performRestPost(
                 bucketName, null, metadata, requestParameters,
-                    new StringEntity(xml, "text/plain", Constants.DEFAULT_ENCODING), false);
+                    new StringEntity(xml, ContentType.create("text/plain", Constants.DEFAULT_ENCODING)), false);
             return getXmlResponseSaxParser().parseMultipleDeleteResponse(
                 new HttpMethodReleaseInputStream(httpResponse));
         } catch (ServiceException se) {
             throw new S3ServiceException(se);
-        } catch (UnsupportedEncodingException e) {
-            throw new S3ServiceException("Unable to encode XML document", e);
         }
     }
 
