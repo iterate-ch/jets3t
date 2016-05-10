@@ -25,12 +25,12 @@ limitations under the License.
     <version>0.9.6-SNAPSHOT</version>
     <description>Toolkit for Amazon S3, Amazon CloudFront, and Google Storage Service.</description>
     <name>JetS3t</name>
-    <url>https://bitbucket.org/jmurty/jets3t/overview</url>
+    <url>https://bitbucket.org/dkocher/jets3t/overview</url>
     <inceptionYear>2006</inceptionYear>
     <scm>
-        <connection>scm:hg:http://bitbucket.org/jmurty/jets3t</connection>
-        <developerConnection>scm:hg:ssh://hg@bitbucket.org/jmurty/jets3t</developerConnection>
-        <url>https://bitbucket.org/jmurty/jets3t</url>
+        <connection>scm:hg:http://bitbucket.org/dkocher/jets3t</connection>
+        <developerConnection>scm:hg:ssh://hg@bitbucket.org/dkocher/jets3t</developerConnection>
+        <url>https://bitbucket.org/dkocher/jets3t</url>
       <tag>HEAD</tag>
   </scm>
     <developers>
@@ -42,7 +42,14 @@ limitations under the License.
                 <role>developer</role>
             </roles>
         </developer>
-    </developers>    
+        <developer>
+            <id>iterate</id>
+            <name>David Kocher</name>
+            <email>dkocher@iterate.ch</email>
+            <organization>iterate GmbH</organization>
+            <organizationUrl>https://iterate.ch</organizationUrl>
+        </developer>
+    </developers>
     <properties>
         <maven.compile.source>1.5</maven.compile.source>
         <maven.compile.target>1.5</maven.compile.target>
