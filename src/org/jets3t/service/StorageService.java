@@ -899,7 +899,8 @@ public abstract class StorageService {
             destinationBucketName, destinationObject.getKey(),
             destinationObject.getAcl(), destinationMetadata,
             ifModifiedSince, ifUnmodifiedSince, ifMatchTags, ifNoneMatchTags, null,
-            destinationObject.getStorageClass(), destinationObject.getServerSideEncryptionAlgorithm());
+            destinationObject.getStorageClass(), destinationObject.getServerSideEncryptionAlgorithm(),
+                destinationObject.getServerSideEncryptionKmsKeyId());
     }
 
     /**
@@ -1559,7 +1560,8 @@ public abstract class StorageService {
         AccessControlList acl, Map<String, Object> destinationMetadata,
         Calendar ifModifiedSince, Calendar ifUnmodifiedSince,
         String[] ifMatchTags, String[] ifNoneMatchTags, String versionId,
-        String destinationObjectStorageClass, String destinationObjectServerSideEncryptionAlgorithm)
+        String destinationObjectStorageClass, String destinationObjectServerSideEncryptionAlgorithm,
+        String destinationObjectServerSideEncryptionKmsKeyId)
         throws ServiceException;
 
     protected abstract void deleteObjectImpl(String bucketName, String objectKey,
