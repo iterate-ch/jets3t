@@ -54,6 +54,7 @@ public class StorageObject extends BaseStorageItem implements Cloneable {
     public static final String METADATA_HEADER_HASH_MD5 = "md5-hash";
     public static final String METADATA_HEADER_ORIGINAL_HASH_MD5 = "original-md5-hash";
     public static final String METADATA_HEADER_SERVER_SIDE_ENCRYPTION  = "server-side-encryption";
+    public static final String METADATA_HEADER_SERVER_SIDE_ENCRYPTION_KMS_KEY_ID  = "server-side-encryption-aws-kms-key-id";
 
     protected AccessControlList acl = null;
     protected transient InputStream dataInputStream = null;
@@ -61,6 +62,7 @@ public class StorageObject extends BaseStorageItem implements Cloneable {
     protected String bucketName = null;
     protected String storageClass = null;
     protected String serverSideEncryptionAlgorithm = null;
+    protected String serverSideEncryptionKmsKeyId = null;
 
     /**
      * Store references to files when the object's data comes from a file, to allow for lazy
@@ -556,6 +558,17 @@ public class StorageObject extends BaseStorageItem implements Cloneable {
      */
     public void setServerSideEncryptionAlgorithm(String serverSideEncryptionAlgorithm) {
         this.serverSideEncryptionAlgorithm = serverSideEncryptionAlgorithm;
+    }
+
+    public String getServerSideEncryptionKmsKeyId() {
+        if (serverSideEncryptionKmsKeyId != null) {
+            return serverSideEncryptionKmsKeyId;
+        }
+        return (String) getMetadata(METADATA_HEADER_SERVER_SIDE_ENCRYPTION_KMS_KEY_ID);
+    }
+
+    public void setServerSideEncryptionKmsKeyId(String serverSideEncryptionKmsKeyId) {
+        this.serverSideEncryptionKmsKeyId = serverSideEncryptionKmsKeyId;
     }
 
     /**
