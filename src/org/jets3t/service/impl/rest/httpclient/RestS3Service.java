@@ -739,13 +739,13 @@ public class RestS3Service extends S3Service {
         throws S3ServiceException
     {
         return this.multipartStartUploadImpl(
-            bucketName, objectKey, metadataProvided, acl, storageClass, null);
+            bucketName, objectKey, metadataProvided, acl, storageClass, null, null);
     }
 
     @Override
     protected MultipartUpload multipartStartUploadImpl(String bucketName, String objectKey,
         Map<String, Object> metadataProvided, AccessControlList acl, String storageClass,
-        String serverSideEncryptionAlgorithm)
+        String serverSideEncryptionAlgorithm, String serverSideEncryptionKmsKeyId)
         throws S3ServiceException
     {
         Map<String, String> requestParameters = new HashMap<String, String>();
@@ -764,7 +764,7 @@ public class RestS3Service extends S3Service {
 
         // Apply per-object or default object properties when uploading object
         prepareStorageClass(metadata, storageClass, true, objectKey);
-        prepareServerSideEncryption(metadata, serverSideEncryptionAlgorithm, objectKey);
+        prepareServerSideEncryption(metadata, serverSideEncryptionAlgorithm, serverSideEncryptionKmsKeyId, objectKey);
         prepareRESTHeaderAcl(metadata, acl);
 
         try {
