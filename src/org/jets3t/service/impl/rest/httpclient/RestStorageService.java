@@ -85,6 +85,9 @@ import org.jets3t.service.utils.SignatureUtils;
 
 import com.jamesmurty.utils.XMLBuilder;
 
+import static org.jets3t.service.model.StorageObject.METADATA_HEADER_SERVER_SIDE_ENCRYPTION;
+import static org.jets3t.service.model.StorageObject.METADATA_HEADER_SERVER_SIDE_ENCRYPTION_KMS_KEY_ID;
+
 /**
  * Abstract REST/HTTP implementation of an S3Service based on the
  * <a href="http://jakarta.apache.org/commons/httpclient/">HttpClient</a> library.
@@ -1766,7 +1769,7 @@ public abstract class RestStorageService extends StorageService implements JetS3
         }
 
         Map<String, Object> map = createObjectImpl(bucketName, null, null,
-                requestEntity, metadata, null, acl, null, null);
+                requestEntity, metadata, null, acl, null, null, null);
 
         StorageBucket bucket = newBucket();
         bucket.setName(bucketName);
@@ -1903,7 +1906,7 @@ public abstract class RestStorageService extends StorageService implements JetS3
         Map<String, Object> map = createObjectImpl(bucketName, object.getKey(),
                 object.getContentType(), requestEntity, object.getMetadataMap(),
                 requestParams, object.getAcl(), object.getStorageClass(),
-                object.getServerSideEncryptionAlgorithm());
+                object.getServerSideEncryptionAlgorithm(), object.getServerSideEncryptionKmsKeyId());
 
         try {
             object.closeDataInputStream();
@@ -1940,7 +1943,8 @@ public abstract class RestStorageService extends StorageService implements JetS3
     protected Map<String, Object> createObjectImpl(String bucketName, String objectKey, String contentType,
                                                    HttpEntity requestEntity, Map<String, Object> metadata,
                                                    Map<String, String> requestParams, AccessControlList acl,
-                                                   String storageClass, String serverSideEncryptionAlgorithm)
+                                                   String storageClass, String serverSideEncryptionAlgorithm,
+                                                   String serverSideEncryptionKmsKeyId)
             throws ServiceException {
         if(metadata == null) {
             metadata = new HashMap<String, Object>();
@@ -1962,7 +1966,7 @@ public abstract class RestStorageService extends StorageService implements JetS3
 
             // do not set server-side encryption flag for part-objects
             if (requestParams == null || !requestParams.containsKey("partNumber")) {
-                prepareServerSideEncryption(metadata, serverSideEncryptionAlgorithm, objectKey);
+                prepareServerSideEncryption(metadata, serverSideEncryptionAlgorithm, serverSideEncryptionKmsKeyId, objectKey);
             }
         }
 
@@ -2050,7 +2054,9 @@ public abstract class RestStorageService extends StorageService implements JetS3
     }
 
     protected void prepareServerSideEncryption(Map<String, Object> metadata,
-                                               String serverSideEncryptionAlgorithm, String objectKey) {
+                                               String serverSideEncryptionAlgorithm,
+                                               String serverSideEncryptionKmsKeyId,
+                                               String objectKey) {
         if(metadata == null) {
             throw new IllegalArgumentException("Null metadata not allowed.");
         }
@@ -2067,8 +2073,12 @@ public abstract class RestStorageService extends StorageService implements JetS3
                     + "' to object '" + objectKey + "'");
         }
         if(serverSideEncryptionAlgorithm != null) {
-            metadata.put(this.getRestHeaderPrefix() + "server-side-encryption",
+            metadata.put(this.getRestHeaderPrefix() + METADATA_HEADER_SERVER_SIDE_ENCRYPTION,
                     serverSideEncryptionAlgorithm);
+            if(serverSideEncryptionKmsKeyId != null) {
+                metadata.put(this.getRestHeaderPrefix() + METADATA_HEADER_SERVER_SIDE_ENCRYPTION_KMS_KEY_ID,
+                        serverSideEncryptionKmsKeyId);
+            }
         }
     }
 
@@ -2078,7 +2088,8 @@ public abstract class RestStorageService extends StorageService implements JetS3
                                                  AccessControlList acl, Map<String, Object> destinationMetadata, Calendar ifModifiedSince,
                                                  Calendar ifUnmodifiedSince, String[] ifMatchTags, String[] ifNoneMatchTags,
                                                  String versionId, String destinationObjectStorageClass,
-                                                 String destinationObjectServerSideEncryptionAlgorithm)
+                                                 String destinationObjectServerSideEncryptionAlgorithm,
+                                                 String destinationObjectServerSideEncryptionKmsKeyId)
             throws ServiceException {
         if(log.isDebugEnabled()) {
             log.debug("Copying Object from " + sourceBucketName + ":" + sourceObjectKey
@@ -2096,7 +2107,8 @@ public abstract class RestStorageService extends StorageService implements JetS3
         metadata.put(this.getRestHeaderPrefix() + "copy-source", sourceKey);
 
         prepareStorageClass(metadata, destinationObjectStorageClass, false, destinationObjectKey);
-        prepareServerSideEncryption(metadata, destinationObjectServerSideEncryptionAlgorithm, destinationObjectKey);
+        prepareServerSideEncryption(metadata, destinationObjectServerSideEncryptionAlgorithm,
+                destinationObjectServerSideEncryptionKmsKeyId, destinationObjectKey);
 
         if(destinationMetadata != null) {
             metadata.put(this.getRestHeaderPrefix() + "metadata-directive", "REPLACE");
@@ -2219,7 +2231,7 @@ public abstract class RestStorageService extends StorageService implements JetS3
                 ifMatchTags, ifNoneMatchTags, byteRangeStart, byteRangeEnd, versionId);
     }
 
-    private StorageObject getObjectImpl(boolean headOnly, String bucketName, String objectKey,
+    protected StorageObject getObjectImpl(boolean headOnly, String bucketName, String objectKey,
                                         Calendar ifModifiedSince, Calendar ifUnmodifiedSince, String[] ifMatchTags,
                                         String[] ifNoneMatchTags, Long byteRangeStart, Long byteRangeEnd, String versionId)
             throws ServiceException {
@@ -2231,6 +2243,16 @@ public abstract class RestStorageService extends StorageService implements JetS3
         Map<String, Object> requestHeaders = new HashMap<String, Object>();
         Map<String, String> requestParameters = new HashMap<String, String>();
 
+        return getObjectImpl(headOnly, bucketName, objectKey, ifModifiedSince, ifUnmodifiedSince,
+                ifMatchTags, ifNoneMatchTags, byteRangeStart, byteRangeEnd, versionId, requestHeaders, requestParameters);
+    }
+
+    protected StorageObject getObjectImpl(boolean headOnly, String bucketName, String objectKey,
+                                          Calendar ifModifiedSince, Calendar ifUnmodifiedSince,
+                                          String[] ifMatchTags, String[] ifNoneMatchTags,
+                                          Long byteRangeStart, Long byteRangeEnd, String versionId,
+                                          Map<String, Object> requestHeaders,
+                                          Map<String, String> requestParameters) throws ServiceException {
         if(ifModifiedSince != null) {
             requestHeaders.put("If-Modified-Since",
                     ServiceUtils.formatRfc822Date(ifModifiedSince.getTime()));

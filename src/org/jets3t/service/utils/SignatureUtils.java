@@ -409,7 +409,7 @@ public class SignatureUtils {
         canonicalStringBuf.append("\n");
 
         // Canonical query string
-        String query = uri.getRawQuery();
+        String query = uri.getQuery();
         if (query == null || query.length() == 0) {
             canonicalStringBuf.append("\n");
         } else {
@@ -423,8 +423,10 @@ public class SignatureUtils {
                 if (paramNameValue.length > 1) {
                     value = paramNameValue[1];
                 }
-                // Add parameters to sorting map, already URI-encoded appropriately
-                sortedQueryParameters.put(name, value);
+                // Add parameters to sorting map, URI-encoded appropriately
+                sortedQueryParameters.put(
+                    SignatureUtils.awsV4EncodeURI(name, true),
+                    SignatureUtils.awsV4EncodeURI(value, true));
             }
             // Add query parameters to canonical string
             boolean isPriorParam = false;

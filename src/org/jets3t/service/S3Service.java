@@ -2287,7 +2287,8 @@ public abstract class S3Service extends RestStorageService implements SignedUrlH
                 destinationBucketName, destinationObject.getKey(),
                 destinationObject.getAcl(), destinationMetadata,
                 ifModifiedSince, ifUnmodifiedSince, ifMatchTags, ifNoneMatchTags, versionId,
-                destinationObject.getStorageClass(), destinationObject.getServerSideEncryptionAlgorithm());
+                destinationObject.getStorageClass(), destinationObject.getServerSideEncryptionAlgorithm(),
+                    destinationObject.getServerSideEncryptionKmsKeyId());
         } catch (ServiceException se) {
             throw new S3ServiceException(se);
         }
@@ -3477,7 +3478,7 @@ public abstract class S3Service extends RestStorageService implements SignedUrlH
         throws S3ServiceException
     {
         return multipartStartUploadImpl(
-            bucketName, objectKey, metadata, acl, storageClass, null);
+            bucketName, objectKey, metadata, acl, storageClass, null, null);
     }
 
     /**
@@ -3498,7 +3499,7 @@ public abstract class S3Service extends RestStorageService implements SignedUrlH
     {
         return multipartStartUploadImpl(bucketName, object.getKey(),
             object.getMetadataMap(), object.getAcl(), object.getStorageClass(),
-            object.getServerSideEncryptionAlgorithm());
+            object.getServerSideEncryptionAlgorithm(), object.getServerSideEncryptionKmsKeyId());
     }
 
     /**
@@ -4000,7 +4001,7 @@ public abstract class S3Service extends RestStorageService implements SignedUrlH
 
     protected abstract MultipartUpload multipartStartUploadImpl(String bucketName, String objectKey,
         Map<String, Object> metadata, AccessControlList acl, String storageClass,
-        String serverSideEncryptionAlgorithm) throws S3ServiceException;
+        String serverSideEncryptionAlgorithm, String serverSideEncryptionKmsKeyId) throws S3ServiceException;
 
     protected abstract void multipartAbortUploadImpl(String uploadId, String bucketName,
         String objectKey) throws S3ServiceException;
