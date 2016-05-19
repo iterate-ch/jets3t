@@ -1208,6 +1208,7 @@ public class RestS3Service extends S3Service {
             HttpResponse getMethod = performRestGet(
                 bucketName, null, requestParameters, null, expectedStatusCodes);
             if (getMethod.getStatusLine().getStatusCode() == 404) {
+                releaseConnection(getMethod);
                 return null;
             } else {
                 return getXmlResponseSaxParser().parseLifecycleConfigurationResponse(

@@ -1382,7 +1382,7 @@ public abstract class RestStorageService extends StorageService implements JetS3
         return httpMethod;
     }
 
-    private void releaseConnection(HttpResponse pResponse) {
+    protected void releaseConnection(HttpResponse pResponse) {
         if(pResponse == null) {
             return;
         }
