@@ -230,7 +230,6 @@ limitations under the License.
             <version>2.5</version>
             <configuration>
               <tagNameFormat>Release-@{project.version}</tagNameFormat>
-              <pushChanges>false</pushChanges>
               <arguments>-DskipTests=true -Dgpgsign=true</arguments>
             </configuration>
           </plugin>
