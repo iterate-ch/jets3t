@@ -51,8 +51,8 @@ limitations under the License.
         </developer>
     </developers>
     <properties>
-        <maven.compile.source>1.5</maven.compile.source>
-        <maven.compile.target>1.5</maven.compile.target>
+        <maven.compile.source>1.7</maven.compile.source>
+        <maven.compile.target>1.7</maven.compile.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
@@ -60,12 +60,6 @@ limitations under the License.
         <keystore.storepass>devpass</keystore.storepass>
         <keystore.keypass>devpass</keystore.keypass>
         <keystore.alias>dev</keystore.alias>
-
-        <sonar.host.url>http://${sonar.host}:9000/</sonar.host.url>
-        <sonar.jdbc.url>
-            jdbc:mysql://${sonar.host}:3306/sonar?useUnicode=true&amp;characterEncoding=utf8
-        </sonar.jdbc.url>
-        <sonar.jdbc.driver>com.mysql.jdbc.Driver</sonar.jdbc.driver>
     </properties>
     <!-- Sonatype Maven repo hosting and sync to Maven Central -->
     <parent>
