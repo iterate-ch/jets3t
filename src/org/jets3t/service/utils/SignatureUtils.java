@@ -409,7 +409,7 @@ public class SignatureUtils {
         canonicalStringBuf.append("\n");
 
         // Canonical query string
-        String query = uri.getQuery();
+        String query = uri.getRawQuery();
         if (query == null || query.length() == 0) {
             canonicalStringBuf.append("\n");
         } else {
@@ -417,7 +417,7 @@ public class SignatureUtils {
             SortedMap<String, String> sortedQueryParameters =
                 new TreeMap<String, String>();
             for (String paramPair: query.split("&")) {
-                String[] paramNameValue = paramPair.split("=");
+                String[] paramNameValue = paramPair.split("=", 2);
                 String name = paramNameValue[0];
                 String value = "";
                 if (paramNameValue.length > 1) {
@@ -425,8 +425,8 @@ public class SignatureUtils {
                 }
                 // Add parameters to sorting map, URI-encoded appropriately
                 sortedQueryParameters.put(
-                    SignatureUtils.awsV4EncodeURI(name, true),
-                    SignatureUtils.awsV4EncodeURI(value, true));
+                    name,
+                    value.replace("/", "%2F"));
             }
             // Add query parameters to canonical string
             boolean isPriorParam = false;
