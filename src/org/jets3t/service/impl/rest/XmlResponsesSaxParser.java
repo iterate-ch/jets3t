@@ -41,31 +41,7 @@ import org.jets3t.service.acl.GranteeInterface;
 import org.jets3t.service.acl.GroupGrantee;
 import org.jets3t.service.acl.Permission;
 import org.jets3t.service.acl.gs.GSAccessControlList;
-import org.jets3t.service.model.BaseVersionOrDeleteMarker;
-import org.jets3t.service.model.GSBucket;
-import org.jets3t.service.model.GSBucketLoggingStatus;
-import org.jets3t.service.model.GSObject;
-import org.jets3t.service.model.GSOwner;
-import org.jets3t.service.model.GSWebsiteConfig;
-import org.jets3t.service.model.LifecycleConfig;
-import org.jets3t.service.model.MultipartCompleted;
-import org.jets3t.service.model.MultipartPart;
-import org.jets3t.service.model.MultipartUpload;
-import org.jets3t.service.model.MultipleDeleteResult;
-import org.jets3t.service.model.NotificationConfig;
-import org.jets3t.service.model.S3Bucket;
-import org.jets3t.service.model.S3BucketLoggingStatus;
-import org.jets3t.service.model.S3BucketVersioningStatus;
-import org.jets3t.service.model.S3DeleteMarker;
-import org.jets3t.service.model.S3Object;
-import org.jets3t.service.model.S3Owner;
-import org.jets3t.service.model.S3Version;
-import org.jets3t.service.model.S3WebsiteConfig;
-import org.jets3t.service.model.StorageBucket;
-import org.jets3t.service.model.StorageBucketLoggingStatus;
-import org.jets3t.service.model.StorageObject;
-import org.jets3t.service.model.StorageOwner;
-import org.jets3t.service.model.WebsiteConfig;
+import org.jets3t.service.model.*;
 import org.jets3t.service.model.LifecycleConfig.Expiration;
 import org.jets3t.service.model.LifecycleConfig.Rule;
 import org.jets3t.service.model.LifecycleConfig.TimeEvent;
@@ -470,6 +446,14 @@ public class XmlResponsesSaxParser {
         LifecycleConfigurationHandler handler = new LifecycleConfigurationHandler(xr);
         parseXmlInputStream(handler, inputStream);
         return handler.getLifecycleConfig();
+    }
+
+    public AccelerateConfig parseAccelerateConfigurationResponse(
+        InputStream inputStream) throws ServiceException
+    {
+        AccelerateConfigurationHandler handler = new AccelerateConfigurationHandler(xr);
+        parseXmlInputStream(handler, inputStream);
+        return handler.getConfig();
     }
 
     //////////////
@@ -1805,4 +1789,19 @@ public class XmlResponsesSaxParser {
         }
     }
 
+    public class AccelerateConfigurationHandler extends SimpleHandler {
+        private AccelerateConfig config = new AccelerateConfig();
+
+        public AccelerateConfigurationHandler(XMLReader xr) {
+            super(xr);
+        }
+
+        public AccelerateConfig getConfig() {
+            return config;
+        }
+
+        public void endStatus(String text) {
+            config.setEnabled(text.equals("Enabled"));
+        }
+    }
 }

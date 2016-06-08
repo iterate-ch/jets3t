@@ -38,22 +38,7 @@ import org.jets3t.service.acl.GroupGrantee;
 import org.jets3t.service.acl.Permission;
 import org.jets3t.service.impl.rest.httpclient.RestS3Service;
 import org.jets3t.service.impl.rest.httpclient.RestStorageService;
-import org.jets3t.service.model.BaseVersionOrDeleteMarker;
-import org.jets3t.service.model.LifecycleConfig;
-import org.jets3t.service.model.MultipartCompleted;
-import org.jets3t.service.model.MultipartPart;
-import org.jets3t.service.model.MultipartUpload;
-import org.jets3t.service.model.MultipleDeleteResult;
-import org.jets3t.service.model.NotificationConfig;
-import org.jets3t.service.model.S3Bucket;
-import org.jets3t.service.model.S3BucketLoggingStatus;
-import org.jets3t.service.model.S3BucketVersioningStatus;
-import org.jets3t.service.model.S3DeleteMarker;
-import org.jets3t.service.model.S3Object;
-import org.jets3t.service.model.S3Version;
-import org.jets3t.service.model.StorageBucket;
-import org.jets3t.service.model.StorageObject;
-import org.jets3t.service.model.S3WebsiteConfig;
+import org.jets3t.service.model.*;
 import org.jets3t.service.model.container.ObjectKeyAndVersion;
 import org.jets3t.service.mx.MxDelegate;
 import org.jets3t.service.security.AWSDevPayCredentials;
@@ -3945,6 +3930,32 @@ public abstract class S3Service extends RestStorageService implements SignedUrlH
         deleteLifecycleConfigImpl(bucketName);
     }
 
+    /**
+     * @param bucketName
+     * a bucket with a accelerate configuration.
+     * @return
+     * the lifecycle configuration details, or null if the bucket has no lifecycle config.
+     * @throws S3ServiceException
+     */
+    public AccelerateConfig getAccelerateConfig(String bucketName) throws S3ServiceException {
+        return getAccelerateConfigImpl(bucketName);
+    }
+
+    /**
+     * Apply a lifecycle configuration to a bucket
+     *
+     * @param bucketName
+     * the bucket to which the accelerate configuration will be applied.
+     * @param config
+     * the lifecycle configuration to apply.
+     * @throws S3ServiceException
+     */
+    public void setAccelerateConfig(String bucketName, AccelerateConfig config)
+        throws S3ServiceException
+    {
+        setAccelerateConfigImpl(bucketName, config);
+    }
+
     ///////////////////////////////////////////////////////////
     // Abstract methods that must be implemented by S3 services
     ///////////////////////////////////////////////////////////
@@ -4052,4 +4063,9 @@ public abstract class S3Service extends RestStorageService implements SignedUrlH
     public abstract void deleteLifecycleConfigImpl(String bucketName)
         throws S3ServiceException;
 
+    public abstract AccelerateConfig getAccelerateConfigImpl(String bucketName)
+        throws S3ServiceException;
+
+    public abstract void setAccelerateConfigImpl(String bucketName, AccelerateConfig config)
+        throws S3ServiceException;
 }

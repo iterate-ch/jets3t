@@ -36,6 +36,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.util.EntityUtils;
@@ -52,19 +53,7 @@ import org.jets3t.service.impl.rest.XmlResponsesSaxParser.CompleteMultipartUploa
 import org.jets3t.service.impl.rest.XmlResponsesSaxParser.ListMultipartPartsResultHandler;
 import org.jets3t.service.impl.rest.XmlResponsesSaxParser.ListMultipartUploadsResultHandler;
 import org.jets3t.service.impl.rest.XmlResponsesSaxParser.ListVersionsResultsHandler;
-import org.jets3t.service.model.BaseStorageItem;
-import org.jets3t.service.model.BaseVersionOrDeleteMarker;
-import org.jets3t.service.model.LifecycleConfig;
-import org.jets3t.service.model.MultipartCompleted;
-import org.jets3t.service.model.MultipartPart;
-import org.jets3t.service.model.MultipartUpload;
-import org.jets3t.service.model.MultipleDeleteResult;
-import org.jets3t.service.model.NotificationConfig;
-import org.jets3t.service.model.S3Bucket;
-import org.jets3t.service.model.S3BucketVersioningStatus;
-import org.jets3t.service.model.S3Object;
-import org.jets3t.service.model.StorageBucket;
-import org.jets3t.service.model.StorageObject;
+import org.jets3t.service.model.*;
 import org.jets3t.service.model.container.ObjectKeyAndVersion;
 import org.jets3t.service.security.AWSDevPayCredentials;
 import org.jets3t.service.security.AWSSessionCredentials;
@@ -1256,6 +1245,49 @@ public class RestS3Service extends S3Service {
             Map<String, String> requestParameters = new HashMap<String, String>();
             requestParameters.put("lifecycle", "");
             performRestDelete(bucketName, null, requestParameters, null, null);
+        } catch (ServiceException se) {
+            throw new S3ServiceException(se);
+        }
+    }
+
+    @Override
+    public AccelerateConfig getAccelerateConfigImpl(String bucketName) throws S3ServiceException {
+        try {
+            Map<String, String> requestParameters = new HashMap<String, String>();
+            requestParameters.put("accelerate", "");
+
+            int[] expectedStatusCodes = {200};
+
+            HttpResponse getMethod = performRestGet(
+                bucketName, null, requestParameters, null, expectedStatusCodes);
+            return getXmlResponseSaxParser().parseAccelerateConfigurationResponse(
+                new HttpMethodReleaseInputStream(getMethod));
+        } catch (ServiceException se) {
+            throw new S3ServiceException(se);
+        }
+    }
+
+    @Override
+    public void setAccelerateConfigImpl(String bucketName, AccelerateConfig config) throws S3ServiceException {
+        Map<String, String> requestParameters = new HashMap<String, String>();
+        requestParameters.put("accelerate", "");
+
+        String xml;
+        String xmlMd5Hash;
+        try {
+            xml = config.toXml();
+            xmlMd5Hash = ServiceUtils.toBase64(
+                ServiceUtils.computeMD5Hash(xml.getBytes(Constants.DEFAULT_ENCODING)));
+        } catch (Exception e) {
+            throw new S3ServiceException("Unable to build AccelerateConfig XML document", e);
+        }
+
+        Map<String, Object> metadata = new HashMap<String, Object>();
+        metadata.put("Content-MD5", xmlMd5Hash);
+
+        try {
+            performRestPut(bucketName, null, metadata, requestParameters,
+                new StringEntity(xml, ContentType.create("text/plain", Constants.DEFAULT_ENCODING)), true);
         } catch (ServiceException se) {
             throw new S3ServiceException(se);
         }
