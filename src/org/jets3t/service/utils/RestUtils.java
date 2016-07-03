@@ -136,6 +136,8 @@ public class RestUtils {
         encodedPath = encodedPath.replaceAll("\\+", "%20");
         // '@' character need not be URL encoded and Google Chrome balks on signed URLs if it is.
         encodedPath = encodedPath.replaceAll("%40", "@");
+        encodedPath = encodedPath.replaceAll("%2A", "*");
+        encodedPath = encodedPath.replaceAll("%7E", "~");
         return encodedPath;
     }
 
