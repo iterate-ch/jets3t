@@ -751,36 +751,24 @@ public abstract class RestStorageService extends StorageService implements JetS3
             .toUpperCase();
 
         if ("AWS4-HMAC-SHA256".equalsIgnoreCase(forceRequestSignatureVersion)
-            || "AWS4-HMAC-SHA256".equalsIgnoreCase(requestSignatureVersion)
-            // If we have a cached region for request's bucket target, we know
-            // we have used "AWS4-HMAC-SHA256" for this bucket in the past.
-            || (this.regionEndpointCache != null
-                && this.regionEndpointCache.containsRegionForBucketName(
-                    requestBucketName)))
+            || "AWS4-HMAC-SHA256".equalsIgnoreCase(requestSignatureVersion))
         {
             requestSignatureVersion = "AWS4-HMAC-SHA256";
-            // Look up AWS region appropriate for the request's Host endpoint
-            // from the request's Host if a definite mapping is available...
-            String region = SignatureUtils.awsRegionForRequest(requestURI);
-            if (region != null) {
-                // Try caching the definitive region in case this request is
-                // directed at a bucket. If it's not a bucket-related request
-                // this is a no-op.
-                this.regionEndpointCache.putRegionForBucketName(
-                    requestBucketName, region);
-            }
-            // ...otherwise from the region cache if available...
-            if (region == null && this.regionEndpointCache != null) {
-                region = this.regionEndpointCache.getRegionForBucketName(
-                    requestBucketName);
-
-                // We cached a bucket-to-region mapping previously but this
-                // request doesn't use the correct Host name for the region,
-                // so fix that now to avoid failure or excess retries.
+            String region = this.regionEndpointCache.getRegionForBucketName(requestBucketName);
+            if ( region == null) {
+                // Look up AWS region appropriate for the request's Host endpoint
+                // from the request's Host if a definite mapping is available...
+                region = SignatureUtils.awsRegionForRequest(requestURI);
                 if (region != null) {
+                    // Try caching the definitive region in case this request is
+                    // directed at a bucket. If it's not a bucket-related request
+                    // this is a no-op.
+                    this.regionEndpointCache.putRegionForBucketName(requestBucketName, region);
+                    // We cached a bucket-to-region mapping previously but this
+                    // request doesn't use the correct Host name for the region,
+                    // so fix that now to avoid failure or excess retries.
                     ((HttpRequestBase) httpMethod).setURI(
-                        SignatureUtils.awsV4CorrectHostnameForRegion(
-                            requestURI, region));
+                        SignatureUtils.awsV4CorrectHostnameForRegion(requestURI, region));
                 }
             }
             // ...finally fall back to the default region and hope for the best.
