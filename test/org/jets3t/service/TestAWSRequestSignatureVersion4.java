@@ -132,7 +132,7 @@ public class TestAWSRequestSignatureVersion4 extends TestCase {
             "host;range;x-amz-content-sha256;x-amz-date\n"+
             "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
         String canonicalRequestString = SignatureUtils.awsV4BuildCanonicalRequestString(
-            httpGet, requestPayloadHexSHA256Hash);
+            httpGet, requestPayloadHexSHA256Hash, "us-east-1");
         assertEquals(expected, canonicalRequestString);
 
         // String to sign
@@ -202,7 +202,7 @@ public class TestAWSRequestSignatureVersion4 extends TestCase {
             "date;host;x-amz-content-sha256;x-amz-date;x-amz-storage-class\n" +
             "44ce7dd67c959e0d3524ffac1771dfbba87d2b6b4b4e99e42034a8b803f8b072";
         String canonicalRequestString = SignatureUtils.awsV4BuildCanonicalRequestString(
-            httpPut, requestPayloadHexSHA256Hash);
+            httpPut, requestPayloadHexSHA256Hash, "us-east-1");
         assertEquals(expected, canonicalRequestString);
 
         // String to sign
@@ -267,7 +267,7 @@ public class TestAWSRequestSignatureVersion4 extends TestCase {
             "host;x-amz-content-sha256;x-amz-date\n" +
             "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
         String canonicalRequestString = SignatureUtils.awsV4BuildCanonicalRequestString(
-            httpGet, requestPayloadHexSHA256Hash);
+            httpGet, requestPayloadHexSHA256Hash, "us-east-1");
         assertEquals(expected, canonicalRequestString);
 
         // String to sign
@@ -332,7 +332,7 @@ public class TestAWSRequestSignatureVersion4 extends TestCase {
             "host;x-amz-content-sha256;x-amz-date\n" +
             "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
         String canonicalRequestString = SignatureUtils.awsV4BuildCanonicalRequestString(
-            httpGet, requestPayloadHexSHA256Hash);
+            httpGet, requestPayloadHexSHA256Hash, "us-east-1");
         assertEquals(expected, canonicalRequestString);
 
         // String to sign

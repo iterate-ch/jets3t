@@ -99,6 +99,8 @@ public class SignatureUtils {
         // Recognise default/legacy endpoints where the Host does not
         // correspond to the region name.
         if (host.endsWith("s3.amazonaws.com")
+            || host.endsWith("s3-accelerate.amazonaws.com")
+            || host.endsWith("s3-accelerate.dualstack.amazonaws.com")
             || host.endsWith("s3-external-1.amazonaws.com"))
         {
             return null;
@@ -182,7 +184,7 @@ public class SignatureUtils {
         // Canonical request string
         String canonicalRequestString =
             SignatureUtils.awsV4BuildCanonicalRequestString(
-                httpMethod, requestPayloadHexSha256Hash);
+                httpMethod, requestPayloadHexSha256Hash, region);
 
         // String to sign
         String stringToSign = SignatureUtils.awsV4BuildStringToSign(
@@ -353,7 +355,7 @@ public class SignatureUtils {
      * @return canonical request string according to AWS Request Signature version 4
      */
     public static String awsV4BuildCanonicalRequestString(
-        HttpUriRequest httpMethod, String requestPayloadHexSha256Hash)
+        HttpUriRequest httpMethod, String requestPayloadHexSha256Hash, String region)
     {
         URI uri = httpMethod.getURI();
         String httpRequestMethod = httpMethod.getMethod();
@@ -595,7 +597,10 @@ public class SignatureUtils {
      * becomes "s3-eu-central-1.amazonaws.com".
      */
     public static URI awsV4CorrectHostnameForRegion(URI uri, String region) {
-        String[] hostSplit = uri.getHost().split("\\.");
+        String hostname = uri.getHost();
+        hostname = hostname.replace("s3-accelerate.dualstack", "s3");
+        hostname = hostname.replace("s3-accelerate", "s3");
+        String[] hostSplit = hostname.split("\\.");
         if (region.equals("us-east-1")) {
             hostSplit[hostSplit.length - 3] = "s3";
         } else {
