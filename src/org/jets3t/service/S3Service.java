@@ -38,22 +38,7 @@ import org.jets3t.service.acl.GroupGrantee;
 import org.jets3t.service.acl.Permission;
 import org.jets3t.service.impl.rest.httpclient.RestS3Service;
 import org.jets3t.service.impl.rest.httpclient.RestStorageService;
-import org.jets3t.service.model.BaseVersionOrDeleteMarker;
-import org.jets3t.service.model.LifecycleConfig;
-import org.jets3t.service.model.MultipartCompleted;
-import org.jets3t.service.model.MultipartPart;
-import org.jets3t.service.model.MultipartUpload;
-import org.jets3t.service.model.MultipleDeleteResult;
-import org.jets3t.service.model.NotificationConfig;
-import org.jets3t.service.model.S3Bucket;
-import org.jets3t.service.model.S3BucketLoggingStatus;
-import org.jets3t.service.model.S3BucketVersioningStatus;
-import org.jets3t.service.model.S3DeleteMarker;
-import org.jets3t.service.model.S3Object;
-import org.jets3t.service.model.S3Version;
-import org.jets3t.service.model.StorageBucket;
-import org.jets3t.service.model.StorageObject;
-import org.jets3t.service.model.S3WebsiteConfig;
+import org.jets3t.service.model.*;
 import org.jets3t.service.model.container.ObjectKeyAndVersion;
 import org.jets3t.service.mx.MxDelegate;
 import org.jets3t.service.security.AWSDevPayCredentials;
@@ -2287,7 +2272,8 @@ public abstract class S3Service extends RestStorageService implements SignedUrlH
                 destinationBucketName, destinationObject.getKey(),
                 destinationObject.getAcl(), destinationMetadata,
                 ifModifiedSince, ifUnmodifiedSince, ifMatchTags, ifNoneMatchTags, versionId,
-                destinationObject.getStorageClass(), destinationObject.getServerSideEncryptionAlgorithm());
+                destinationObject.getStorageClass(), destinationObject.getServerSideEncryptionAlgorithm(),
+                    destinationObject.getServerSideEncryptionKmsKeyId());
         } catch (ServiceException se) {
             throw new S3ServiceException(se);
         }
@@ -3477,7 +3463,7 @@ public abstract class S3Service extends RestStorageService implements SignedUrlH
         throws S3ServiceException
     {
         return multipartStartUploadImpl(
-            bucketName, objectKey, metadata, acl, storageClass, null);
+            bucketName, objectKey, metadata, acl, storageClass, null, null);
     }
 
     /**
@@ -3498,7 +3484,7 @@ public abstract class S3Service extends RestStorageService implements SignedUrlH
     {
         return multipartStartUploadImpl(bucketName, object.getKey(),
             object.getMetadataMap(), object.getAcl(), object.getStorageClass(),
-            object.getServerSideEncryptionAlgorithm());
+            object.getServerSideEncryptionAlgorithm(), object.getServerSideEncryptionKmsKeyId());
     }
 
     /**
@@ -3921,6 +3907,32 @@ public abstract class S3Service extends RestStorageService implements SignedUrlH
      * Apply a lifecycle configuration to a bucket
      *
      * @param bucketName
+     * the bucket to which the transfer acceleration will be applied.
+     * @param config
+     * the lifecycle configuration to apply.
+     * @throws S3ServiceException
+     */
+    public void setAccelerateConfig(String bucketName, AccelerateConfig config)
+        throws S3ServiceException
+    {
+        setAccelerateConfigImpl(bucketName, config);
+    }
+
+    /**
+     * @param bucketName
+     * a bucket with a transfer acceleration configuration.
+     * @return
+     * the lifecycle configuration details, or null if the bucket has no lifecycle config.
+     * @throws S3ServiceException
+     */
+    public AccelerateConfig getAccelerateConfig(String bucketName) throws S3ServiceException {
+        return getAccelerateConfigImpl(bucketName);
+    }
+
+    /**
+     * Apply a lifecycle configuration to a bucket
+     *
+     * @param bucketName
      * the bucket to which the lifecycle configuration will be applied.
      * @param config
      * the lifecycle configuration to apply.
@@ -4000,7 +4012,7 @@ public abstract class S3Service extends RestStorageService implements SignedUrlH
 
     protected abstract MultipartUpload multipartStartUploadImpl(String bucketName, String objectKey,
         Map<String, Object> metadata, AccessControlList acl, String storageClass,
-        String serverSideEncryptionAlgorithm) throws S3ServiceException;
+        String serverSideEncryptionAlgorithm, String serverSideEncryptionKmsKeyId) throws S3ServiceException;
 
     protected abstract void multipartAbortUploadImpl(String uploadId, String bucketName,
         String objectKey) throws S3ServiceException;
@@ -4051,4 +4063,9 @@ public abstract class S3Service extends RestStorageService implements SignedUrlH
     public abstract void deleteLifecycleConfigImpl(String bucketName)
         throws S3ServiceException;
 
+    public abstract AccelerateConfig getAccelerateConfigImpl(String bucketName)
+        throws S3ServiceException;
+
+    public abstract void setAccelerateConfigImpl(String bucketName, AccelerateConfig config)
+        throws S3ServiceException;
 }

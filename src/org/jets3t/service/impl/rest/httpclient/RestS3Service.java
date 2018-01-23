@@ -36,6 +36,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.util.EntityUtils;
@@ -52,19 +53,7 @@ import org.jets3t.service.impl.rest.XmlResponsesSaxParser.CompleteMultipartUploa
 import org.jets3t.service.impl.rest.XmlResponsesSaxParser.ListMultipartPartsResultHandler;
 import org.jets3t.service.impl.rest.XmlResponsesSaxParser.ListMultipartUploadsResultHandler;
 import org.jets3t.service.impl.rest.XmlResponsesSaxParser.ListVersionsResultsHandler;
-import org.jets3t.service.model.BaseStorageItem;
-import org.jets3t.service.model.BaseVersionOrDeleteMarker;
-import org.jets3t.service.model.LifecycleConfig;
-import org.jets3t.service.model.MultipartCompleted;
-import org.jets3t.service.model.MultipartPart;
-import org.jets3t.service.model.MultipartUpload;
-import org.jets3t.service.model.MultipleDeleteResult;
-import org.jets3t.service.model.NotificationConfig;
-import org.jets3t.service.model.S3Bucket;
-import org.jets3t.service.model.S3BucketVersioningStatus;
-import org.jets3t.service.model.S3Object;
-import org.jets3t.service.model.StorageBucket;
-import org.jets3t.service.model.StorageObject;
+import org.jets3t.service.model.*;
 import org.jets3t.service.model.container.ObjectKeyAndVersion;
 import org.jets3t.service.security.AWSDevPayCredentials;
 import org.jets3t.service.security.AWSSessionCredentials;
@@ -661,12 +650,10 @@ public class RestS3Service extends S3Service {
 
         try {
             performRestPut(bucketName, null, metadata, requestParameters,
-                new StringEntity(policyDocument, "text/plain", Constants.DEFAULT_ENCODING),
+                new StringEntity(policyDocument, ContentType.create("text/plain", Constants.DEFAULT_ENCODING)),
                 true);
         } catch (ServiceException se) {
             throw new S3ServiceException(se);
-        } catch (UnsupportedEncodingException e) {
-            throw new S3ServiceException("Unable to encode LoggingStatus XML document", e);
         }
     }
 
@@ -725,12 +712,10 @@ public class RestS3Service extends S3Service {
                 "</RequestPaymentConfiguration>";
 
             performRestPut(bucketName, null, metadata, requestParameters,
-                new StringEntity(xml, "text/plain", Constants.DEFAULT_ENCODING),
+                new StringEntity(xml, ContentType.create("text/plain", Constants.DEFAULT_ENCODING)),
                 true);
         } catch (ServiceException se) {
             throw new S3ServiceException(se);
-        } catch (UnsupportedEncodingException e) {
-            throw new S3ServiceException("Unable to encode RequestPaymentConfiguration XML document", e);
         }
     }
 
@@ -739,13 +724,13 @@ public class RestS3Service extends S3Service {
         throws S3ServiceException
     {
         return this.multipartStartUploadImpl(
-            bucketName, objectKey, metadataProvided, acl, storageClass, null);
+            bucketName, objectKey, metadataProvided, acl, storageClass, null, null);
     }
 
     @Override
     protected MultipartUpload multipartStartUploadImpl(String bucketName, String objectKey,
         Map<String, Object> metadataProvided, AccessControlList acl, String storageClass,
-        String serverSideEncryptionAlgorithm)
+        String serverSideEncryptionAlgorithm, String serverSideEncryptionKmsKeyId)
         throws S3ServiceException
     {
         Map<String, String> requestParameters = new HashMap<String, String>();
@@ -764,7 +749,7 @@ public class RestS3Service extends S3Service {
 
         // Apply per-object or default object properties when uploading object
         prepareStorageClass(metadata, storageClass, true, objectKey);
-        prepareServerSideEncryption(metadata, serverSideEncryptionAlgorithm, objectKey);
+        prepareServerSideEncryption(metadata, serverSideEncryptionAlgorithm, serverSideEncryptionKmsKeyId, objectKey);
         prepareRESTHeaderAcl(metadata, acl);
 
         try {
@@ -1187,12 +1172,10 @@ public class RestS3Service extends S3Service {
 
         try {
             performRestPut(bucketName, null, metadata, requestParameters,
-                new StringEntity(xml, "text/plain", Constants.DEFAULT_ENCODING),
+                new StringEntity(xml, ContentType.create("text/plain", Constants.DEFAULT_ENCODING)),
                 true);
         } catch (ServiceException se) {
             throw new S3ServiceException(se);
-        } catch (UnsupportedEncodingException e) {
-            throw new S3ServiceException("Unable to encode XML document", e);
         }
     }
 
@@ -1208,6 +1191,7 @@ public class RestS3Service extends S3Service {
             HttpResponse getMethod = performRestGet(
                 bucketName, null, requestParameters, null, expectedStatusCodes);
             if (getMethod.getStatusLine().getStatusCode() == 404) {
+                releaseConnection(getMethod);
                 return null;
             } else {
                 return getXmlResponseSaxParser().parseLifecycleConfigurationResponse(
@@ -1240,12 +1224,10 @@ public class RestS3Service extends S3Service {
 
         try {
             performRestPut(bucketName, null, metadata, requestParameters,
-                new StringEntity(xml, "text/plain", Constants.DEFAULT_ENCODING),
+                new StringEntity(xml, ContentType.create("text/plain", Constants.DEFAULT_ENCODING)),
                 true);
         } catch (ServiceException se) {
             throw new S3ServiceException(se);
-        } catch (UnsupportedEncodingException e) {
-            throw new S3ServiceException("Unable to encode XML document", e);
         }
     }
 
@@ -1255,6 +1237,50 @@ public class RestS3Service extends S3Service {
             Map<String, String> requestParameters = new HashMap<String, String>();
             requestParameters.put("lifecycle", "");
             performRestDelete(bucketName, null, requestParameters, null, null);
+        } catch (ServiceException se) {
+            throw new S3ServiceException(se);
+        }
+    }
+
+    @Override
+    public void setAccelerateConfigImpl(String bucketName, AccelerateConfig config) throws S3ServiceException {
+        Map<String, String> requestParameters = new HashMap<String, String>();
+        requestParameters.put("accelerate", "");
+
+        String xml;
+        String xmlMd5Hash;
+        try {
+            xml = config.toXml();
+            xmlMd5Hash = ServiceUtils.toBase64(
+                    ServiceUtils.computeMD5Hash(xml.getBytes(Constants.DEFAULT_ENCODING)));
+        } catch (Exception e) {
+            throw new S3ServiceException("Unable to build AccelerateConfig XML document", e);
+        }
+
+        Map<String, Object> metadata = new HashMap<String, Object>();
+        metadata.put("Content-MD5", xmlMd5Hash);
+
+        try {
+            performRestPut(bucketName, null, metadata, requestParameters,
+                    new StringEntity(xml, ContentType.create("text/plain", Constants.DEFAULT_ENCODING)),
+                    true);
+        } catch (ServiceException se) {
+            throw new S3ServiceException(se);
+        }
+    }
+
+    @Override
+    public AccelerateConfig getAccelerateConfigImpl(String bucketName) throws S3ServiceException {
+        try {
+            Map<String, String> requestParameters = new HashMap<String, String>();
+            requestParameters.put("accelerate", "");
+
+            int[] expectedStatusCodes = {200};
+
+            HttpResponse getMethod = performRestGet(
+                bucketName, null, requestParameters, null, expectedStatusCodes);
+            return getXmlResponseSaxParser().parseAccelerateConfigurationResponse(
+                new HttpMethodReleaseInputStream(getMethod));
         } catch (ServiceException se) {
             throw new S3ServiceException(se);
         }
@@ -1300,13 +1326,11 @@ public class RestS3Service extends S3Service {
         try {
             HttpResponse httpResponse = performRestPost(
                 bucketName, null, metadata, requestParameters,
-                    new StringEntity(xml, "text/plain", Constants.DEFAULT_ENCODING), false);
+                    new StringEntity(xml, ContentType.create("text/plain", Constants.DEFAULT_ENCODING)), false);
             return getXmlResponseSaxParser().parseMultipleDeleteResponse(
                 new HttpMethodReleaseInputStream(httpResponse));
         } catch (ServiceException se) {
             throw new S3ServiceException(se);
-        } catch (UnsupportedEncodingException e) {
-            throw new S3ServiceException("Unable to encode XML document", e);
         }
     }
 
