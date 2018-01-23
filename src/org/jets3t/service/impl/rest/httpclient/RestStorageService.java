@@ -782,7 +782,8 @@ public abstract class RestStorageService extends StorageService implements JetS3
             }
             // ...finally fall back to the default region and hope for the best.
             if (region == null) {
-                region = "us-east-1";
+                region = getJetS3tProperties().getStringProperty(
+                        "storage-service.default-region", "us-east-1");
             }
 
             String requestPayloadHexSHA256Hash =
