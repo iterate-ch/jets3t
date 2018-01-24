@@ -18,6 +18,17 @@
  */
 package org.jets3t.service.utils;
 
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpEntityEnclosingRequest;
+import org.apache.http.HttpHeaders;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.entity.ByteArrayEntity;
+import org.apache.http.entity.StringEntity;
+import org.jets3t.service.impl.rest.httpclient.RepeatableRequestEntity;
+import org.jets3t.service.io.ProgressMonitoredInputStream;
+import org.jets3t.service.security.ProviderCredentials;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -26,25 +37,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.SimpleTimeZone;
-import java.util.SortedMap;
-import java.util.TreeMap;
-
-import javax.management.RuntimeErrorException;
-
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpEntityEnclosingRequest;
-import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.entity.ByteArrayEntity;
-import org.apache.http.entity.StringEntity;
-import org.jets3t.service.impl.rest.httpclient.RepeatableRequestEntity;
-import org.jets3t.service.io.ProgressMonitoredInputStream;
-import org.jets3t.service.security.ProviderCredentials;
+import java.util.*;
 
 /**
  * Utility methods for signing HTTP requests, mainly for newer signature
@@ -448,6 +441,7 @@ public class SignatureUtils {
         // Canonical Headers
         SortedMap<String, String> sortedHeaders = new TreeMap<String, String>();
         sortedHeaders.putAll(headersMap);
+        sortedHeaders.remove(HttpHeaders.EXPECT.toLowerCase());
         for (Map.Entry<String, String> entry: sortedHeaders.entrySet()) {
             canonicalStringBuf
                 .append(entry.getKey())
