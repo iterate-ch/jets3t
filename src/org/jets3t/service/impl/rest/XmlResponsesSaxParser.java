@@ -1036,7 +1036,7 @@ public class XmlResponsesSaxParser {
         @Override
         public void startElement(String name) {
             if (name.equals("Owner")) {
-                owner = null;
+                owner = newOwner();
             } else if (name.equals("CommonPrefixes")) {
                 insideCommonPrefixes = true;
             }
