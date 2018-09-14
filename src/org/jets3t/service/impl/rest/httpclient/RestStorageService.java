@@ -1160,7 +1160,7 @@ public abstract class RestStorageService extends StorageService implements JetS3
             }
         }
 
-        HttpResponse result = performRequest(httpMethod, new int[]{200, 204});
+        HttpResponse result = performRequest(httpMethod, new int[]{200, 201, 204});
 
         if(requestEntity != null) {
             // Respond with the actual guaranteed content length of the uploaded data.
