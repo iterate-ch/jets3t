@@ -703,7 +703,7 @@ public abstract class RestStorageService extends StorageService implements JetS3
         HttpUriRequest httpMethod, HttpContext context,
         String forceRequestSignatureVersion) throws ServiceException
     {
-        if(getProviderCredentials() != null) {
+        if(isAuthenticatedConnection()) {
             if(log.isDebugEnabled()) {
                 log.debug("Adding authorization for Access Key '"
                         + getProviderCredentials().getAccessKey() + "'.");
@@ -1481,7 +1481,7 @@ public abstract class RestStorageService extends StorageService implements JetS3
     protected StorageBucket[] listAllBucketsImpl(Map<String, Object> headers) throws ServiceException {
         if(log.isDebugEnabled()) {
             log.debug("Listing all buckets for user: "
-                    + getProviderCredentials().getAccessKey());
+                    + getProviderCredentials());
         }
 
         String bucketName = ""; // Root path of S3 service lists the user's buckets.
@@ -1502,7 +1502,7 @@ public abstract class RestStorageService extends StorageService implements JetS3
     protected StorageOwner getAccountOwnerImpl() throws ServiceException {
         if(log.isDebugEnabled()) {
             log.debug("Looking up owner of S3 account via the ListAllBuckets response: "
-                    + getProviderCredentials().getAccessKey());
+                    + getProviderCredentials());
         }
 
         String bucketName = ""; // Root path of S3 service lists the user's buckets.
