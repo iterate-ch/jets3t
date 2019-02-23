@@ -69,7 +69,7 @@ public class SimpleHandler extends DefaultHandler {
 
     @Override
     public void endElement(String uri, String name, String qName) {
-        String elementText = this.textContent.toString().trim();
+        String elementText = this.textContent.toString();
         try {
             Method method = currentHandler.getClass().getMethod("end" + name, new Class[]{String.class});
             method.invoke(currentHandler, elementText);
