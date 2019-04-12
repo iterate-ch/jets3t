@@ -117,26 +117,33 @@ public class RestUtils {
             "content-encoding");
 
     /**
-     * Encodes a URL string, and ensures that spaces are encoded as "%20" instead of "+" to keep
-     * fussy web browsers happier.
+     * Encodes a URL string according
+     * {@link "http://docs.aws.amazon.com/AmazonS3/latest/API/sig-v4-header-based-auth.html"}
      *
      * @param path
      * @return
      * encoded URL.
      */
     public static String encodeUrlString(String path) {
-        String encodedPath = null;
+        StringBuilder result = new StringBuilder();
         try {
-            encodedPath = URLEncoder.encode(path, Constants.DEFAULT_ENCODING);
-        }
-        catch(UnsupportedEncodingException e) {
+            for (int i = 0; i < path.length(); i++) {
+                char ch = path.charAt(i);
+                switch (ch) {
+                    case ' ':
+                        result.append("%20");
+                        break;
+                    case '*':
+                        result.append("%2A");
+                        break;
+                    default:
+                        result.append(URLEncoder.encode(Character.toString(ch), Constants.DEFAULT_ENCODING));
+                }
+            }
+        } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
-        // Web browsers do not always handle '+' characters well, use the well-supported '%20' instead.
-        encodedPath = encodedPath.replaceAll("\\+", "%20");
-        encodedPath = encodedPath.replaceAll("%2A", "*");
-        encodedPath = encodedPath.replaceAll("%7E", "~");
-        return encodedPath;
+        return result.toString();
     }
 
     /**
