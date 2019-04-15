@@ -10,6 +10,8 @@ public class RestUtilsTest extends TestCase {
     public void testEncode() throws Exception {
         assertEquals("/p", RestUtils.encodeUrlPath("/p", "/"));
         assertEquals("/p%20d", RestUtils.encodeUrlPath("/p d", "/"));
+        assertEquals("/p%2Ad", RestUtils.encodeUrlPath("/p*d", "/"));
+        assertEquals("/p%2Bd", RestUtils.encodeUrlPath("/p+d", "/"));
     }
 
     public void testEncodeTrailingDelimiter() throws Exception {
