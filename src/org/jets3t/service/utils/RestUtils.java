@@ -136,6 +136,9 @@ public class RestUtils {
                     case '*':
                         result.append("%2A");
                         break;
+                    case '~':
+                        result.append("~");
+                        break;
                     default:
                         result.append(URLEncoder.encode(Character.toString(ch), Constants.DEFAULT_ENCODING));
                 }
