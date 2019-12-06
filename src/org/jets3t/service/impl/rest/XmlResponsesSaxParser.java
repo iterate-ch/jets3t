@@ -24,10 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -47,8 +44,7 @@ import org.jets3t.service.model.LifecycleConfig.Rule;
 import org.jets3t.service.model.LifecycleConfig.TimeEvent;
 import org.jets3t.service.model.LifecycleConfig.Transition;
 import org.jets3t.service.utils.ServiceUtils;
-import org.xml.sax.InputSource;
-import org.xml.sax.XMLReader;
+import org.xml.sax.*;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
@@ -469,8 +465,8 @@ public class XmlResponsesSaxParser {
         private StorageOwner currentOwner = null;
         private boolean insideCommonPrefixes = false;
 
-        private final List<StorageObject> objects = new ArrayList<StorageObject>();
-        private final List<String> commonPrefixes = new ArrayList<String>();
+        private List<StorageObject> objects = null;
+        private List<String> commonPrefixes = null;
 
         // Listing properties.
         private String bucketName = null;
@@ -519,11 +515,17 @@ public class XmlResponsesSaxParser {
          * @return
          * the S3 objects contained in the listing.
          */
-        public StorageObject[] getObjects() {
+        public StorageObject[] getObjects() throws ServiceException {
+            if (null == objects) {
+                throw new ServiceException(new SAXNotSupportedException());
+            }
             return objects.toArray(new StorageObject[objects.size()]);
         }
 
-        public String[] getCommonPrefixes() {
+        public String[] getCommonPrefixes() throws ServiceException {
+            if (null == commonPrefixes) {
+                throw new ServiceException(new SAXNotSupportedException());
+            }
             return commonPrefixes.toArray(new String[commonPrefixes.size()]);
         }
 
@@ -545,7 +547,10 @@ public class XmlResponsesSaxParser {
 
         @Override
         public void startElement(String name) {
-            if (name.equals("Contents")) {
+            if (name.equals("ListBucketResult")) {
+                objects = new ArrayList<StorageObject>();
+                commonPrefixes = new ArrayList<String>();
+            } else if (name.equals("Contents")) {
                 currentObject = newObject();
                 currentObject.setBucketName(bucketName);
             } else if (name.equals("Owner")) {
@@ -585,9 +590,11 @@ public class XmlResponsesSaxParser {
             }
             // Object details.
             else if (name.equals("Contents")) {
-                objects.add(currentObject);
-                if (log.isDebugEnabled()) {
-                    log.debug("Created new object from listing: " + currentObject);
+                if (null != objects) {
+                    objects.add(currentObject);
+                    if (log.isDebugEnabled()) {
+                        log.debug("Created new object from listing: " + currentObject);
+                    }
                 }
             } else if (name.equals("Key")) {
                 currentObject.setKey(elementText);
@@ -621,7 +628,9 @@ public class XmlResponsesSaxParser {
             }
             // Common prefixes.
             else if (insideCommonPrefixes && name.equals("Prefix")) {
-                commonPrefixes.add(elementText);
+                if (null != commonPrefixes) {
+                    commonPrefixes.add(elementText);
+                }
             } else if (name.equals("CommonPrefixes")) {
                 insideCommonPrefixes = false;
             }
@@ -639,13 +648,16 @@ public class XmlResponsesSaxParser {
         private StorageOwner bucketsOwner = null;
         private StorageBucket currentBucket = null;
 
-        private final List<StorageBucket> buckets = new ArrayList<StorageBucket>();
+        private List<StorageBucket> buckets = null;
 
         /**
          * @return
          * the buckets listed in the document.
          */
-        public StorageBucket[] getBuckets() {
+        public StorageBucket[] getBuckets() throws ServiceException {
+            if (null == buckets) {
+                throw new ServiceException(new SAXNotSupportedException());
+            }
             return buckets.toArray(new StorageBucket[buckets.size()]);
         }
 
@@ -659,7 +671,9 @@ public class XmlResponsesSaxParser {
 
         @Override
         public void startElement(String name) {
-            if (name.equals("Bucket")) {
+            if (name.equals("ListAllMyBucketsResult")) {
+                buckets = new ArrayList<StorageBucket>();
+            } else if (name.equals("Bucket")) {
                 currentBucket = newBucket();
             } else if (name.equals("Owner")) {
                 bucketsOwner = newOwner();
@@ -680,7 +694,9 @@ public class XmlResponsesSaxParser {
                     log.debug("Created new bucket from listing: " + currentBucket);
                 }
                 currentBucket.setOwner(bucketsOwner);
-                buckets.add(currentBucket);
+                if(null != buckets) {
+                    buckets.add(currentBucket);
+                }
             } else if (name.equals("Name")) {
                 if(null != currentBucket) {
                     currentBucket.setName(elementText);
