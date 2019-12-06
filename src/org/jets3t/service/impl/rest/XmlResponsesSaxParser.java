@@ -682,7 +682,9 @@ public class XmlResponsesSaxParser {
                 currentBucket.setOwner(bucketsOwner);
                 buckets.add(currentBucket);
             } else if (name.equals("Name")) {
-                currentBucket.setName(elementText);
+                if(null != currentBucket) {
+                    currentBucket.setName(elementText);
+                }
             } else if (name.equals("CreationDate")) {
                 elementText += ".000Z";
                 try {
