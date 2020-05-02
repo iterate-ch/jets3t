@@ -579,48 +579,6 @@ public class SignatureUtils {
     }
 
     /**
-     * Replace the hostname of the given URI endpoint to match the given region.
-     *
-     * @param uri
-     * @param region
-     *
-     * @return
-     * URI with hostname that may or may not have been changed to be appropriate
-     * for the given region. For example, the hostname "s3.amazonaws.com" is
-     * unchanged for the "us-east-1" region but for the "eu-central-1" region
-     * becomes "s3-eu-central-1.amazonaws.com".
-     */
-    public static URI awsV4CorrectHostnameForRegion(URI uri, String region) {
-        if ("cn-north-1".equals(region)) {
-            return uri;
-        }
-        if ("cn-northwest-1".equals(region)) {
-            return uri;
-        }
-        String hostname = uri.getHost();
-        hostname = hostname.replace("s3-accelerate.dualstack", "s3");
-        hostname = hostname.replace("s3-accelerate", "s3");
-        String[] hostSplit = hostname.split("\\.");
-        if ("us-east-1".equals(region)) {
-            hostSplit[hostSplit.length - 3] = "s3";
-        } else {
-            hostSplit[hostSplit.length - 3] = "s3-" + region;
-        }
-        String newHost = ServiceUtils.join(hostSplit, ".");
-        try {
-            String rawPathAndQuery = uri.getRawPath();
-            if (uri.getRawQuery() != null) {
-                rawPathAndQuery += "?" + uri.getRawQuery();
-            }
-            return new URL(uri.getScheme(), newHost, uri.getPort(), rawPathAndQuery).toURI();
-        } catch(URISyntaxException e) {
-            throw new RuntimeException(e);
-        } catch(MalformedURLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    /**
      * Slightly modified version of "uri-encode" from:
      * {@link "http://docs.aws.amazon.com/AmazonS3/latest/API/sig-v4-header-based-auth.html"}
      *

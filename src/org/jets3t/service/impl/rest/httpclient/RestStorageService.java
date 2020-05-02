@@ -554,7 +554,7 @@ public abstract class RestStorageService extends StorageService implements JetS3
                 // Special handling for requests signed using AWS request signature version
                 // 4 but sent to the wrong region due to an incorrect Host endpoint.
                 else if("AuthorizationHeaderMalformed".equals(exception.getErrorCode())) {
-                    String expectedRegion = null;
+                    String expectedRegion;
                     try {
                         expectedRegion = exception.getXmlMessageAsBuilder()
                             .xpathFind("/Error/Region").getElement().getTextContent();
@@ -572,18 +572,7 @@ public abstract class RestStorageService extends StorageService implements JetS3
                     this.regionEndpointCache.putRegionForBucketName(
                         bucketName, expectedRegion);
 
-                    ((HttpRequestBase) httpUriRequest).setURI(
-                        SignatureUtils.awsV4CorrectHostnameForRegion(
-                            httpUriRequest.getURI(), expectedRegion));
                     authFailureCount++;
-
-                    if(log.isWarnEnabled()) {
-                        log.warn("Retrying request after automatic adjustment of"
-                            + " Host endpoint from " + "\"" + originalURI.getHost()
-                            + "\" to \"" + httpUriRequest.getURI().getHost()
-                            + "\" following request signing error"
-                            + " using AWS request signing version 4: " + httpUriRequest);
-                    }
                 }
                 // If we haven't explicitly detected an retry-able error response type above,
                 // just throw the exception to abort the request.
@@ -764,11 +753,6 @@ public abstract class RestStorageService extends StorageService implements JetS3
                     // directed at a bucket. If it's not a bucket-related request
                     // this is a no-op.
                     this.regionEndpointCache.putRegionForBucketName(requestBucketName, region);
-                    // We cached a bucket-to-region mapping previously but this
-                    // request doesn't use the correct Host name for the region,
-                    // so fix that now to avoid failure or excess retries.
-                    ((HttpRequestBase) httpMethod).setURI(
-                        SignatureUtils.awsV4CorrectHostnameForRegion(requestURI, region));
                 }
             }
             // ...finally fall back to the default region and hope for the best.

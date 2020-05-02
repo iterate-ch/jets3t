@@ -332,12 +332,7 @@ public abstract class S3Service extends RestStorageService implements SignedUrlH
             // Canonical request string
             String canonicalRequestString;
             try {
-                // Adjust hostname for specific regions
-                URI uriWithCorrectedHostname =
-                    SignatureUtils.awsV4CorrectHostnameForRegion(
-                        new URI(uriPrefix), region);
-                headersToSignMap.put("host", uriWithCorrectedHostname.getHost());
-                uriPrefix = uriWithCorrectedHostname.toString();
+                headersToSignMap.put("host", new URI(uriPrefix).getHost());
 
                 // Set payload SHA256 hash, which is a place-holder value by
                 // default but takes on an object's content SHA256 value if this
