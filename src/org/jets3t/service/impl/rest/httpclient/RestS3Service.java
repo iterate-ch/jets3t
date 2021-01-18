@@ -502,6 +502,7 @@ public class RestS3Service extends S3Service {
         throws S3ServiceException
     {
         Map<String, String> parameters = new HashMap<String, String>();
+        parameters.put("encoding-type", "url");
         parameters.put("versions", null);
         if (prefix != null) {
             parameters.put("prefix", prefix);
