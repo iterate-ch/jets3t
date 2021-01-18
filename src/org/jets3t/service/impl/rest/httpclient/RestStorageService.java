@@ -840,7 +840,7 @@ public abstract class RestStorageService extends StorageService implements JetS3
 
                 urlPath += (!urlPath.contains("?") ? "?" : "&")
                         + RestUtils.encodeUrlString(key);
-                if(value != null && value.length() > 0) {
+                if(value != null) {
                     urlPath += "=" + RestUtils.encodeUrlString(value);
                     if(log.isDebugEnabled()) {
                         log.debug("Added request parameter: " + key + "=" + value);
