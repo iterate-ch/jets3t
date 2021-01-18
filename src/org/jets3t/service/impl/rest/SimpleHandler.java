@@ -11,15 +11,17 @@ import java.lang.reflect.Method;
 public class SimpleHandler extends DefaultHandler {
     private static final Log log = LogFactory.getLog(SimpleHandler.class);
 
-    private XMLReader xr = null;
-    private StringBuffer textContent = null;
-    protected SimpleHandler currentHandler = null;
-    protected SimpleHandler parentHandler = null;
+    private final XMLReader xr;
+    private final StringBuffer textContent;
+
+    protected SimpleHandler currentHandler;
+    protected SimpleHandler parentHandler;
 
     public SimpleHandler(XMLReader xr) {
         this.xr = xr;
         this.textContent = new StringBuffer();
-        currentHandler = this;
+        this.currentHandler = this;
+        this.parentHandler = null;
     }
 
     public void transferControlToHandler(SimpleHandler toHandler) {
@@ -55,6 +57,7 @@ public class SimpleHandler extends DefaultHandler {
     @Override
     public void startElement(String uri, String name, String qName, Attributes attrs) {
         try {
+            textContent.setLength(0);
             Method method = currentHandler.getClass().getMethod("start" + name, new Class[]{});
             method.invoke(currentHandler);
             log.debug("Processed " + this.getClass().getSimpleName() + " startElement method for '" + name + "'");
@@ -68,11 +71,10 @@ public class SimpleHandler extends DefaultHandler {
     }
 
     @Override
-    public void endElement(String uri, String name, String qName) {
-        String elementText = this.textContent.toString();
+    public void endElement(String uri, String name, String qName) { ;
         try {
             Method method = currentHandler.getClass().getMethod("end" + name, new Class[]{String.class});
-            method.invoke(currentHandler, elementText);
+            method.invoke(currentHandler, textContent.toString());
             log.debug("Processed " + this.getClass().getSimpleName() + " endElement method for '" + name + "'");
         }
         catch(NoSuchMethodException e) {
@@ -81,12 +83,10 @@ public class SimpleHandler extends DefaultHandler {
         catch(Exception t) {
             log.error("Unable to invoke " + this.getClass().getSimpleName() + " endElement method for '" + name + "'", t);
         }
-        this.textContent = new StringBuffer();
     }
 
     @Override
     public void characters(char ch[], int start, int length) {
-        this.textContent.append(ch, start, length);
+        textContent.append(ch, start, length);
     }
-
 }
