@@ -1523,6 +1523,7 @@ public abstract class RestStorageService extends StorageService implements JetS3
             boolean automaticallyMergeChunks, String priorLastKey)
             throws ServiceException {
         Map<String, String> parameters = new HashMap<String, String>();
+        parameters.put("encoding-type", "url");
         if(prefix != null) {
             parameters.put("prefix", prefix);
         }
