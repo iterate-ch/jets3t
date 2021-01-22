@@ -657,16 +657,16 @@ public class StorageObject extends BaseStorageItem implements Cloneable {
      */
     public Map<String, Object> getModifiableMetadata() {
         Map<String, Object> objectMetadata = new HashMap<String, Object>(getMetadataMap());
-        objectMetadata.remove(METADATA_HEADER_CONTENT_LENGTH);
-        objectMetadata.remove(METADATA_HEADER_DATE);
-        objectMetadata.remove(METADATA_HEADER_ETAG);
-        objectMetadata.remove(METADATA_HEADER_LAST_MODIFIED_DATE);
-        objectMetadata.remove(Constants.KEY_FOR_COMPLETE_METADATA);
-        objectMetadata.remove(Constants.KEY_FOR_SERVICE_METADATA);
-        objectMetadata.remove(Constants.KEY_FOR_USER_METADATA);
-        objectMetadata.remove(Constants.KEY_FOR_HTTP_METADATA);
-        objectMetadata.remove("id-2"); // HTTP request-specific information
-        objectMetadata.remove("request-id"); // HTTP request-specific information
+        objectMetadata.keySet().removeIf(header -> isMatchingMetadataName(header, METADATA_HEADER_CONTENT_LENGTH));
+        objectMetadata.keySet().removeIf(header -> isMatchingMetadataName(header, METADATA_HEADER_DATE));
+        objectMetadata.keySet().removeIf(header -> isMatchingMetadataName(header, METADATA_HEADER_ETAG));
+        objectMetadata.keySet().removeIf(header -> isMatchingMetadataName(header, METADATA_HEADER_LAST_MODIFIED_DATE));
+        objectMetadata.keySet().removeIf(header -> isMatchingMetadataName(header, Constants.KEY_FOR_COMPLETE_METADATA));
+        objectMetadata.keySet().removeIf(header -> isMatchingMetadataName(header, Constants.KEY_FOR_SERVICE_METADATA));
+        objectMetadata.keySet().removeIf(header -> isMatchingMetadataName(header, Constants.KEY_FOR_USER_METADATA));
+        objectMetadata.keySet().removeIf(header -> isMatchingMetadataName(header, Constants.KEY_FOR_HTTP_METADATA));
+        objectMetadata.keySet().removeIf(header -> isMatchingMetadataName(header, "id-2")); // HTTP request-specific information
+        objectMetadata.keySet().removeIf(header -> isMatchingMetadataName(header, "request-id")); // HTTP request-specific information
         return objectMetadata;
     }
 
