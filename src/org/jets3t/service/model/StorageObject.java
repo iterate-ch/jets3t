@@ -659,6 +659,7 @@ public class StorageObject extends BaseStorageItem implements Cloneable {
         Map<String, Object> objectMetadata = new HashMap<String, Object>(getMetadataMap());
         objectMetadata.keySet().removeIf(header -> isMatchingMetadataName(header, METADATA_HEADER_CONTENT_LENGTH));
         objectMetadata.keySet().removeIf(header -> isMatchingMetadataName(header, METADATA_HEADER_DATE));
+        objectMetadata.keySet().removeIf(header -> isMatchingMetadataName(header, METADATA_HEADER_CONTENT_MD5));
         objectMetadata.keySet().removeIf(header -> isMatchingMetadataName(header, METADATA_HEADER_ETAG));
         objectMetadata.keySet().removeIf(header -> isMatchingMetadataName(header, METADATA_HEADER_LAST_MODIFIED_DATE));
         objectMetadata.keySet().removeIf(header -> isMatchingMetadataName(header, Constants.KEY_FOR_COMPLETE_METADATA));
