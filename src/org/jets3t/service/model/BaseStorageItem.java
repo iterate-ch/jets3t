@@ -159,7 +159,7 @@ public abstract class BaseStorageItem {
            return false;
        }
        // Match if lower-cased names are equivalent
-       return name1.toLowerCase().equals(name2.toLowerCase());
+       return name1.equalsIgnoreCase(name2);
     }
 
     /**
