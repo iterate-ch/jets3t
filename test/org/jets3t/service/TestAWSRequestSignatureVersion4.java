@@ -55,18 +55,10 @@ public class TestAWSRequestSignatureVersion4 extends TestCase {
 
     @Test
     public void testAwsRegionForRequest() throws URISyntaxException {
-        assertEquals(
-            null,
-            SignatureUtils.awsRegionForRequest(new URI("http://www.amazon.com")));
-        assertEquals(
-            null,
-            SignatureUtils.awsRegionForRequest(new URI("http://s3.amazonaws.com")));
-        assertEquals(
-            null,
-            SignatureUtils.awsRegionForRequest(new URI("http://my.cname.s3.amazonaws.com")));
-        assertEquals(
-            null,
-            SignatureUtils.awsRegionForRequest(new URI("http://s3-external-1.amazonaws.com")));
+        assertNull(SignatureUtils.awsRegionForRequest(new URI("http://www.amazon.com")));
+        assertNull(SignatureUtils.awsRegionForRequest(new URI("http://s3.amazonaws.com")));
+        assertNull(SignatureUtils.awsRegionForRequest(new URI("http://my.cname.s3.amazonaws.com")));
+        assertNull(SignatureUtils.awsRegionForRequest(new URI("http://s3-external-1.amazonaws.com")));
         assertEquals(
             "us-west-1",
             SignatureUtils.awsRegionForRequest(new URI("http://s3-us-west-1.amazonaws.com")));
@@ -100,9 +92,11 @@ public class TestAWSRequestSignatureVersion4 extends TestCase {
             "cn-north-1",
             SignatureUtils.awsRegionForRequest(new URI("http://s3.cn-north-1.amazonaws.com.cn")));
         // Test strangely capitalized host name
+        assertNull(SignatureUtils.awsRegionForRequest(new URI("http://S3.AMAZONAWS.COM")));
+        // Test AWSPrivateLink for Amazon S3
         assertEquals(
-            null,
-            SignatureUtils.awsRegionForRequest(new URI("http://S3.AMAZONAWS.COM")));
+                "eu-west-1",
+                SignatureUtils.awsRegionForRequest(new URI("https://vpce-1.s3.eu-west-1.vpce.amazonaws.com")));
     }
 
     @Test

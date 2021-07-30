@@ -116,7 +116,11 @@ public class SignatureUtils {
             for (String portion: hostSplit) {
                 if (portion.equals("amazonaws")) {
                     break;
-                } else if (portion.equals("s3")) {
+                }
+                if (portion.equals("vpce")) {
+                    break;
+                }
+                if (portion.equals("s3")) {
                     wasS3PrefixFound = true;
                 }
                 regionNameCandidate = portion;
