@@ -22,7 +22,7 @@ limitations under the License.
     <groupId>ch.iterate.s3</groupId>
     <artifactId>jets3t</artifactId>
     <packaging>jar</packaging>
-    <version>0.9.28-SNAPSHOT</version>
+    <version>0.9.28</version>
     <description>Toolkit for Amazon S3, Amazon CloudFront, and Google Storage Service.</description>
     <name>JetS3t</name>
     <url>https://bitbucket.org/dkocher/jets3t/overview</url>
@@ -31,7 +31,7 @@ limitations under the License.
         <connection>scm:git:https://github.com/iterate-ch/jets3t.git</connection>
         <developerConnection>scm:git:https://github.com/iterate-ch/jets3t.git</developerConnection>
         <url>https://github.com/iterate-ch/jets3t</url>
-      <tag>HEAD</tag>
+      <tag>Release-0.9.28</tag>
   </scm>
     <developers>
         <developer>
