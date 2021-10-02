@@ -983,10 +983,6 @@ public class RestS3Service extends S3Service {
             Integer maxUploads,
             boolean autoMergeChunks) throws S3ServiceException
     {
-        if (bucketName == null || bucketName.length()==0){
-            throw new IllegalArgumentException(
-                "The bucket name parameter must be specified when listing multipart uploads");
-        }
         Map<String, String> requestParameters = new HashMap<String, String>();
         requestParameters.put("uploads", "");
         if (prefix != null) {
