@@ -554,6 +554,10 @@ public abstract class RestStorageService extends StorageService implements JetS3
                 // Special handling for requests signed using AWS request signature version
                 // 4 but sent to the wrong region due to an incorrect Host endpoint.
                 else if("AuthorizationHeaderMalformed".equals(exception.getErrorCode())) {
+                    // Retry up to our limit; but at least once
+                    if (authFailureCount >= retryMaxCount && authFailureCount > 0) {
+                        throw exception;
+                    }
                     String expectedRegion;
                     try {
                         expectedRegion = exception.getXmlMessageAsBuilder()
