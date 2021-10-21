@@ -29,18 +29,14 @@ import java.util.Map;
  * @author jmurty
  */
 public class RegionEndpointCache {
-    private Map<String, String> bucketNameToRegionMap = new HashMap<String, String>();
+    private final Map<String, String> bucketNameToRegionMap = new HashMap<String, String>();
 
     public String getRegionForBucketName(String bucketName) {
-        if (bucketNameToRegionMap.containsKey(bucketName)) {
-            return bucketNameToRegionMap.get(bucketName);
-        } else {
-            return null;
-        }
+        return bucketNameToRegionMap.get(bucketName);
     }
 
     public String putRegionForBucketName(String bucketName, String region) {
-        if (bucketName != null && region != null) {
+        if (region != null) {
             return bucketNameToRegionMap.put(bucketName, region);
         } else {
             return null;
