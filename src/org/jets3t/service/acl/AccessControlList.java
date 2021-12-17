@@ -67,6 +67,8 @@ public class AccessControlList implements Serializable {
      * users can read, only owner can write)
      */
     public static final AccessControlList REST_CANNED_AUTHENTICATED_READ = new AccessControlList();
+    public static final AccessControlList REST_CANNED_BUCKET_OWNER_FULLCONTROL = new AccessControlList();
+    public static final AccessControlList REST_CANNED_BUCKET_OWNER_READ = new AccessControlList();
 
     protected final HashSet<GrantAndPermission> grants = new HashSet<GrantAndPermission>();
     protected StorageOwner owner = null;
@@ -253,6 +255,10 @@ public class AccessControlList implements Serializable {
             return "public-read-write";
         } else if (AccessControlList.REST_CANNED_AUTHENTICATED_READ.equals(this)) {
             return "authenticated-read";
+        } else if (AccessControlList.REST_CANNED_BUCKET_OWNER_FULLCONTROL.equals(this)) {
+            return "bucket-owner-full-control";
+        } else if (AccessControlList.REST_CANNED_BUCKET_OWNER_READ.equals(this)) {
+            return "bucket-owner-read";
         }
         return null;
     }
