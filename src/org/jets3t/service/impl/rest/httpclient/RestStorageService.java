@@ -1680,7 +1680,7 @@ public abstract class RestStorageService extends StorageService implements JetS3
     @Override
     protected OwnershipControlsConfig getBucketOwnershipControlsImpl(String bucketName) throws ServiceException {
         if(log.isDebugEnabled()) {
-            log.debug("Retrieving BucketO Ownership Controls for Bucket: " + bucketName);
+            log.debug("Retrieving Bucket Ownership Controls for Bucket: " + bucketName);
         }
 
         Map<String, String> requestParameters = new HashMap<String, String>();
