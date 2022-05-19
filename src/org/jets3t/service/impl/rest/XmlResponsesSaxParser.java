@@ -242,6 +242,24 @@ public class XmlResponsesSaxParser {
     }
 
     /**
+     * Parses an OwnershipControlsHandler response XML document from an input stream.
+     *
+     * @param inputStream
+     * XML data input stream.
+     * @return
+     * the XML handler object populated with data parsed from the XML stream.
+     *
+     * @throws ServiceException
+     */
+    public OwnershipControlsHandler parseOwnershipControlsResponse(InputStream inputStream)
+            throws ServiceException
+    {
+        OwnershipControlsHandler handler = new OwnershipControlsHandler(xr);
+        parseXmlInputStream(handler, inputStream);
+        return handler;
+    }
+
+    /**
      * Parses an AccessControlListHandler response XML document from an input stream.
      *
      * @param inputStream
@@ -1803,6 +1821,30 @@ public class XmlResponsesSaxParser {
         }
 
         public void endRule(String text) {
+            config.addRule(latestRule);
+        }
+    }
+
+    public class OwnershipControlsHandler extends SimpleHandler {
+
+        private OwnershipControlsConfig.Rule latestRule = null;
+
+        private OwnershipControlsConfig config = new OwnershipControlsConfig();
+
+        public OwnershipControlsHandler(XMLReader xr) {
+            super(xr);
+        }
+
+        public OwnershipControlsConfig getOwnershipControlsConfig() {
+            return config;
+        }
+
+        public void startRule() {
+            latestRule  = config.new Rule();
+        }
+
+        public void endRule(String text) {
+            latestRule.setOwnership(OwnershipControlsConfig.ObjectOwnership.fromText(text));
             config.addRule(latestRule);
         }
     }

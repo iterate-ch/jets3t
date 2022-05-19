@@ -30,6 +30,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jets3t.service.acl.AccessControlList;
 import org.jets3t.service.impl.rest.XmlResponsesSaxParser;
+import org.jets3t.service.model.OwnershipControlsConfig;
 import org.jets3t.service.model.StorageBucket;
 import org.jets3t.service.model.StorageObject;
 import org.jets3t.service.model.StorageOwner;
@@ -1586,6 +1587,8 @@ public abstract class StorageService {
         String versionId) throws ServiceException;
 
     protected abstract AccessControlList getBucketAclImpl(String bucketName) throws ServiceException;
+
+    protected abstract OwnershipControlsConfig getBucketOwnershipControlsImpl(String bucketName) throws ServiceException;
 
     protected abstract void shutdownImpl() throws ServiceException;
 
