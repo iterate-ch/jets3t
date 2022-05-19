@@ -68,14 +68,7 @@ import org.jets3t.service.acl.AccessControlList;
 import org.jets3t.service.impl.rest.HttpException;
 import org.jets3t.service.impl.rest.XmlResponsesSaxParser.CopyObjectResultHandler;
 import org.jets3t.service.impl.rest.XmlResponsesSaxParser.ListBucketHandler;
-import org.jets3t.service.model.BaseStorageItem;
-import org.jets3t.service.model.CreateBucketConfiguration;
-import org.jets3t.service.model.S3Object;
-import org.jets3t.service.model.StorageBucket;
-import org.jets3t.service.model.StorageBucketLoggingStatus;
-import org.jets3t.service.model.StorageObject;
-import org.jets3t.service.model.StorageOwner;
-import org.jets3t.service.model.WebsiteConfig;
+import org.jets3t.service.model.*;
 import org.jets3t.service.mx.MxDelegate;
 import org.jets3t.service.security.ProviderCredentials;
 import org.jets3t.service.utils.Mimetypes;
@@ -1682,6 +1675,21 @@ public abstract class RestStorageService extends StorageService implements JetS3
         return getXmlResponseSaxParser()
                 .parseAccessControlListResponse(
                         new HttpMethodReleaseInputStream(httpResponse)).getAccessControlList();
+    }
+
+    @Override
+    protected OwnershipControlsConfig getBucketOwnershipControlsImpl(String bucketName) throws ServiceException {
+        if(log.isDebugEnabled()) {
+            log.debug("Retrieving BucketO Ownership Controls for Bucket: " + bucketName);
+        }
+
+        Map<String, String> requestParameters = new HashMap<String, String>();
+        requestParameters.put("ownershipControls", "");
+
+        HttpResponse httpResponse = performRestGet(bucketName, null, requestParameters, null);
+        return getXmlResponseSaxParser()
+                .parseOwnershipControlsResponse(
+                        new HttpMethodReleaseInputStream(httpResponse)).getOwnershipControlsConfig();
     }
 
     @Override

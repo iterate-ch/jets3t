@@ -3072,6 +3072,14 @@ public abstract class S3Service extends RestStorageService implements SignedUrlH
         }
     }
 
+    public OwnershipControlsConfig getBucketOwnershipControls(String bucketName) throws S3ServiceException {
+        try {
+            return getBucketOwnershipControlsImpl(bucketName);
+        } catch (ServiceException se) {
+            throw new S3ServiceException(se);
+        }
+    }
+
     /**
      * Retrieves the location of a bucket. Only the owner of a bucket may retrieve its location.
      *
