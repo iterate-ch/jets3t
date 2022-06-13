@@ -31,10 +31,7 @@ import org.jets3t.service.security.ProviderCredentials;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -51,6 +48,7 @@ public class SignatureUtils {
         new SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'");
 
     static {
+        awsFlavouredISO8601DateParser.setCalendar(new GregorianCalendar());
         awsFlavouredISO8601DateParser.setTimeZone(new SimpleTimeZone(0, "GMT"));
     }
 
