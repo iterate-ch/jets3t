@@ -91,21 +91,21 @@ public class UrlSigningExample {
         System.out.println("Signed DELETE URL: " + deleteUrl);
 
         System.out.println("Performing PUT with signed URL");
-        S3Object putObject = signedUrlHandler.putObjectWithSignedUrl(putUrl, object);
+        S3Object putObject = signedUrlHandler.putObjectWithSignedUrl(bucket.getName(), putUrl, object);
         System.out.println("  Object has been uploaded to S3: " + putObject.getKey());
 
         System.out.println("Performing HEAD with signed URL");
-        S3Object headObject = signedUrlHandler.getObjectDetailsWithSignedUrl(headUrl);
+        S3Object headObject = signedUrlHandler.getObjectDetailsWithSignedUrl(bucket.getName(), headUrl);
         System.out.println("  Size of object in S3: " + headObject.getContentLength());
 
         System.out.println("Performing GET with signed URL");
-        S3Object getObject = signedUrlHandler.getObjectWithSignedUrl(getUrl);
+        S3Object getObject = signedUrlHandler.getObjectWithSignedUrl(bucket.getName(), getUrl);
         String contentData = (new BufferedReader(
             new InputStreamReader(getObject.getDataInputStream()))).readLine();
         System.out.println("  Content of object in S3: " + contentData);
 
         System.out.println("Performing DELETE with signed URL");
-        signedUrlHandler.deleteObjectWithSignedUrl(deleteUrl);
+        signedUrlHandler.deleteObjectWithSignedUrl(bucket.getName(), deleteUrl);
         System.out.println("  Object deleted - the example is finished");
     }
 

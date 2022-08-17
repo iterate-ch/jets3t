@@ -1842,7 +1842,7 @@ public class S3ServiceMulti {
                     result = s3Object;
                 } else {
                     SignedUrlHandler handler = s3Service;
-                    handler.putObjectAclWithSignedUrl(signedUrl, signedUrlAcl);
+                    handler.putObjectAclWithSignedUrl(bucket.getName(), signedUrl, signedUrlAcl);
                     URL url = new URL(signedUrl);
                     S3Object object = ServiceUtils.buildObjectFromUrl(
                         url.getHost(), url.getPath(), s3Service.getEndpoint());
@@ -1896,7 +1896,7 @@ public class S3ServiceMulti {
                     result = object;
                 } else {
                     SignedUrlHandler handler = s3Service;
-                    AccessControlList acl = handler.getObjectAclWithSignedUrl(signedAclUrl);
+                    AccessControlList acl = handler.getObjectAclWithSignedUrl(bucket.getName(), signedAclUrl);
                     URL url = new URL(signedAclUrl);
                     object = ServiceUtils.buildObjectFromUrl(
                         url.getHost(), url.getPath(), s3Service.getEndpoint());
@@ -1950,7 +1950,7 @@ public class S3ServiceMulti {
                     result = object;
                 } else {
                     SignedUrlHandler handler = s3Service;
-                    handler.deleteObjectWithSignedUrl(signedDeleteUrl);
+                    handler.deleteObjectWithSignedUrl(bucket.getName(), signedDeleteUrl);
                     URL url = new URL(signedDeleteUrl);
                     result = ServiceUtils.buildObjectFromUrl(
                         url.getHost(), url.getPath(), s3Service.getEndpoint());
@@ -2233,14 +2233,14 @@ public class S3ServiceMulti {
                         result = s3Service.getObjectDetails(bucket, objectKey);
                     } else {
                         SignedUrlHandler handler = s3Service;
-                        result = handler.getObjectDetailsWithSignedUrl(signedGetOrHeadUrl);
+                        result = handler.getObjectDetailsWithSignedUrl(bucket.getName(), signedGetOrHeadUrl);
                     }
                 } else {
                     if (signedGetOrHeadUrl == null) {
                         result = s3Service.getObject(bucket, objectKey);
                     } else {
                         SignedUrlHandler handler = s3Service;
-                        result = handler.getObjectWithSignedUrl(signedGetOrHeadUrl);
+                        result = handler.getObjectWithSignedUrl(bucket.getName(), signedGetOrHeadUrl);
                     }
                 }
             } catch (ServiceException se) {
@@ -2302,7 +2302,7 @@ public class S3ServiceMulti {
                     object = s3Service.getObject(bucket, objectKey);
                 } else {
                     SignedUrlHandler handler = s3Service;
-                    object = handler.getObjectWithSignedUrl(downloadPackage.getSignedUrl());
+                    object = handler.getObjectWithSignedUrl(bucket.getName(), downloadPackage.getSignedUrl());
                 }
 
                 // Replace the S3 object in the download package with the downloaded version to make metadata available.
@@ -2465,7 +2465,7 @@ public class S3ServiceMulti {
                 }
                 SignedUrlHandler signedPutUploader = s3Service;
                 result = signedPutUploader.putObjectWithSignedUrl(
-                    signedUrlAndObject.getSignedUrl(), signedUrlAndObject.getObject());
+                        signedUrlAndObject.getObject().getBucketName(), signedUrlAndObject.getSignedUrl(), signedUrlAndObject.getObject());
 
                 if (underlyingFile instanceof TempFile) {
                     underlyingFile.delete();

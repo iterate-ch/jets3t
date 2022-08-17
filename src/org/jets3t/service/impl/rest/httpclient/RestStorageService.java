@@ -277,9 +277,9 @@ public abstract class RestStorageService extends StorageService implements JetS3
                 && contentType.toLowerCase().startsWith(Mimetypes.MIMETYPE_XML.toLowerCase());
     }
 
-    protected HttpResponse performRequest(HttpUriRequest httpMethod, int[] expectedResponseCodes)
+    protected HttpResponse performRequest(String bucketName, HttpUriRequest httpMethod, int[] expectedResponseCodes)
             throws ServiceException {
-        return performRequest(httpMethod, expectedResponseCodes, null);
+        return performRequest(bucketName, httpMethod, expectedResponseCodes, null);
     }
 
     /**
@@ -297,6 +297,7 @@ public abstract class RestStorageService extends StorageService implements JetS3
      *                          error response document.
      */
     protected HttpResponse performRequest(
+            String bucketName,
             HttpUriRequest httpUriRequest,
             int[] expectedResponseCodes,
             HttpContext context) throws ServiceException
@@ -327,7 +328,7 @@ public abstract class RestStorageService extends StorageService implements JetS3
             // This eternal loop is broken by an explicit `break` command or by throwing an exception
             while(true) {
                 // Build the authorization string for the method
-                authorizeHttpRequest(httpUriRequest, context, forceRequestSignatureVersion);
+                authorizeHttpRequest(bucketName, httpUriRequest, context, forceRequestSignatureVersion);
 
                 response = httpClient.execute(httpUriRequest, context);
                 int responseCode = response.getStatusLine().getStatusCode();
@@ -561,11 +562,6 @@ public abstract class RestStorageService extends StorageService implements JetS3
                         // was caused by something other than just wrong region.
                         throw exception;
                     }
-
-                    // Cache correct region for this request's bucket name
-                    URI originalURI = httpUriRequest.getURI();
-                    String bucketName = ServiceUtils.findBucketNameInHostOrPath(
-                        originalURI, this.getEndpoint());
                     this.regionEndpointCache.putRegionForBucketName(
                         bucketName, expectedRegion);
 
@@ -678,16 +674,16 @@ public abstract class RestStorageService extends StorageService implements JetS3
      * <p>
      * The signature is added to the request as an Authorization header.
      *
-     * @param httpMethod the request object
+     * @param bucketName
+     * @param httpMethod                   the request object
      * @param context
-     * @param forceRequestSignatureVersion
-     * request signature/signing version to use for requests, may be null in
-     * which case the default signature version is applied.
+     * @param forceRequestSignatureVersion request signature/signing version to use for requests, may be null in
+     *                                     which case the default signature version is applied.
      * @throws ServiceException
      */
     public void authorizeHttpRequest(
-        HttpUriRequest httpMethod, HttpContext context,
-        String forceRequestSignatureVersion) throws ServiceException
+            String bucketName, HttpUriRequest httpMethod, HttpContext context,
+            String forceRequestSignatureVersion) throws ServiceException
     {
         if(isAuthenticatedConnection()) {
             if(log.isDebugEnabled()) {
@@ -729,8 +725,6 @@ public abstract class RestStorageService extends StorageService implements JetS3
             }
         }
 
-        String requestBucketName = ServiceUtils.findBucketNameInHostOrPath(
-            requestURI, this.getEndpoint());
         String requestSignatureVersion = this.getJetS3tProperties()
             .getStringProperty(
                 "storage-service.request-signature-version", "AWS2")
@@ -740,7 +734,7 @@ public abstract class RestStorageService extends StorageService implements JetS3
             || "AWS4-HMAC-SHA256".equalsIgnoreCase(requestSignatureVersion))
         {
             requestSignatureVersion = "AWS4-HMAC-SHA256";
-            String region = this.regionEndpointCache.getRegionForBucketName(requestBucketName);
+            String region = this.regionEndpointCache.getRegionForBucketName(bucketName);
             if ( region == null) {
                 // Look up AWS region appropriate for the request's Host endpoint
                 // from the request's Host if a definite mapping is available...
@@ -749,7 +743,7 @@ public abstract class RestStorageService extends StorageService implements JetS3
                     // Try caching the definitive region in case this request is
                     // directed at a bucket. If it's not a bucket-related request
                     // this is a no-op.
-                    this.regionEndpointCache.putRegionForBucketName(requestBucketName, region);
+                    this.regionEndpointCache.putRegionForBucketName(bucketName, region);
                 }
             }
             // ...finally fall back to the default region and hope for the best.
@@ -780,8 +774,6 @@ public abstract class RestStorageService extends StorageService implements JetS3
             // If bucket name is not already part of the full path, add it.
             // This can be the case if the Host name has a bucket-name prefix,
             // or if the Host name constitutes the bucket name for DNS-redirects.
-            String bucketName = ServiceUtils.findBucketNameInHostOrPath(
-                requestURI, getEndpoint());
             if (bucketName != null && requestURI.getHost().startsWith(bucketName)) {
                 fullUrl = "/" + bucketName + fullUrl;
             }
@@ -1036,7 +1028,7 @@ public abstract class RestStorageService extends StorageService implements JetS3
         // Add all request headers.
         addRequestHeadersToConnection(httpMethod, requestHeaders);
 
-        return performRequest(httpMethod, new int[]{200});
+        return performRequest(bucketName, httpMethod, new int[]{200});
     }
 
     /**
@@ -1088,7 +1080,7 @@ public abstract class RestStorageService extends StorageService implements JetS3
                 requestParameters);
         // Add all request headers.
         addRequestHeadersToConnection(httpMethod, requestHeaders);
-        return performRequest(httpMethod, expectedStatusCodes);
+        return performRequest(bucketName, httpMethod, expectedStatusCodes);
     }
 
     /**
@@ -1141,7 +1133,7 @@ public abstract class RestStorageService extends StorageService implements JetS3
             }
         }
 
-        HttpResponse result = performRequest(httpMethod, new int[]{200, 201, 204});
+        HttpResponse result = performRequest(bucketName, httpMethod, new int[]{200, 201, 204});
 
         if(requestEntity != null) {
             // Respond with the actual guaranteed content length of the uploaded data.
@@ -1190,7 +1182,7 @@ public abstract class RestStorageService extends StorageService implements JetS3
             ((HttpPost) postMethod).setEntity(requestEntity);
         }
 
-        HttpResponse result = performRequest(postMethod, new int[]{200});
+        HttpResponse result = performRequest(bucketName, postMethod, new int[]{200});
 
         if(autoRelease) {
             releaseConnection(result);
@@ -1224,7 +1216,7 @@ public abstract class RestStorageService extends StorageService implements JetS3
                     multiFactorSerialNumber + " " + multiFactorAuthCode);
         }
 
-        HttpResponse result = performRequest(httpMethod, new int[]{204, 200});
+        HttpResponse result = performRequest(bucketName, httpMethod, new int[]{204, 200});
 
         // Release connection after DELETE (there's no response content)
         if(log.isDebugEnabled()) {
@@ -2323,17 +2315,17 @@ public abstract class RestStorageService extends StorageService implements JetS3
      * This operation does not required any S3 functionality as it merely
      * uploads the object by performing a standard HTTP PUT using the signed URL.
      *
+     * @param bucketName
      * @param signedPutUrl a signed PUT URL generated with
-     *                     {@link org.jets3t.service.S3Service#createSignedPutUrl(String, String, java.util.Map, org.jets3t.service.security.ProviderCredentials, java.util.Date)}.
+     *                     {@link org.jets3t.service.S3Service#createSignedPutUrl(String, String, Map, ProviderCredentials, java.util.Date)}.
      * @param object       the object to upload, which must correspond to the object for which the URL was signed.
      *                     The object <b>must</b> have the correct content length set, and to apply a non-standard
      *                     ACL policy only the REST canned ACLs can be used
-     *                     (eg {@link org.jets3t.service.acl.AccessControlList#REST_CANNED_PUBLIC_READ_WRITE}).
+     *                     (eg {@link AccessControlList#REST_CANNED_PUBLIC_READ_WRITE}).
      * @return the S3Object put to S3. The S3Object returned will represent the object created in S3.
      * @throws org.jets3t.service.ServiceException
-     *
      */
-    public S3Object putObjectWithSignedUrl(String signedPutUrl, S3Object object)
+    public S3Object putObjectWithSignedUrl(String bucketName, String signedPutUrl, S3Object object)
             throws ServiceException {
         HttpPut putMethod = new HttpPut(signedPutUrl);
 
@@ -2360,7 +2352,7 @@ public abstract class RestStorageService extends StorageService implements JetS3
             putMethod.setEntity(repeatableRequestEntity);
         }
 
-        HttpResponse httpResponse = performRequest(putMethod, new int[]{200});
+        HttpResponse httpResponse = performRequest(bucketName, putMethod, new int[]{200});
 
         // Consume response data and release connection.
         releaseConnection(httpResponse);
@@ -2413,13 +2405,13 @@ public abstract class RestStorageService extends StorageService implements JetS3
      * This operation does not required any S3 functionality as it merely
      * deletes the object by performing a standard HTTP DELETE using the signed URL.
      *
+     * @param bucketName
      * @param signedDeleteUrl a signed DELETE URL generated with {@link org.jets3t.service.S3Service#createSignedDeleteUrl}.
      * @throws org.jets3t.service.ServiceException
-     *
      */
-    public void deleteObjectWithSignedUrl(String signedDeleteUrl) throws ServiceException {
+    public void deleteObjectWithSignedUrl(String bucketName, String signedDeleteUrl) throws ServiceException {
         HttpDelete deleteMethod = new HttpDelete(signedDeleteUrl);
-        HttpResponse response = performRequest(deleteMethod, new int[]{204, 200});
+        HttpResponse response = performRequest(bucketName, deleteMethod, new int[]{204, 200});
         releaseConnection(response);
     }
 
@@ -2430,14 +2422,14 @@ public abstract class RestStorageService extends StorageService implements JetS3
      * This operation does not required any S3 functionality as it merely
      * uploads the object by performing a standard HTTP GET using the signed URL.
      *
+     * @param bucketName
      * @param signedGetUrl a signed GET URL generated with
-     *                     {@link org.jets3t.service.S3Service#createSignedGetUrl(String, String, org.jets3t.service.security.ProviderCredentials, java.util.Date)}.
+     *                     {@link org.jets3t.service.S3Service#createSignedGetUrl(String, String, ProviderCredentials, java.util.Date)}.
      * @return the S3Object in S3 including all metadata and the object's data input stream.
      * @throws org.jets3t.service.ServiceException
-     *
      */
-    public S3Object getObjectWithSignedUrl(String signedGetUrl) throws ServiceException {
-        return getObjectWithSignedUrlImpl(signedGetUrl, false);
+    public S3Object getObjectWithSignedUrl(String bucketName, String signedGetUrl) throws ServiceException {
+        return getObjectWithSignedUrlImpl(bucketName, signedGetUrl, false);
     }
 
     /**
@@ -2447,30 +2439,30 @@ public abstract class RestStorageService extends StorageService implements JetS3
      * This operation does not required any S3 functionality as it merely
      * uploads the object by performing a standard HTTP HEAD using the signed URL.
      *
+     * @param bucketName
      * @param signedHeadUrl a signed HEAD URL generated with
-     *                      {@link org.jets3t.service.S3Service#createSignedHeadUrl(String, String, org.jets3t.service.security.ProviderCredentials, java.util.Date)}.
+     *                      {@link org.jets3t.service.S3Service#createSignedHeadUrl(String, String, ProviderCredentials, java.util.Date)}.
      * @return the S3Object in S3 including all metadata, but without the object's data input stream.
      * @throws org.jets3t.service.ServiceException
-     *
      */
-    public S3Object getObjectDetailsWithSignedUrl(String signedHeadUrl) throws ServiceException {
-        return getObjectWithSignedUrlImpl(signedHeadUrl, true);
+    public S3Object getObjectDetailsWithSignedUrl(String bucketName, String signedHeadUrl) throws ServiceException {
+        return getObjectWithSignedUrlImpl(bucketName, signedHeadUrl, true);
     }
 
     /**
      * Gets an object's ACL details using a pre-signed GET URL generated for that object.
      * This method is an implementation of the interface {@link org.jets3t.service.utils.signedurl.SignedUrlHandler}.
      *
-     * @param signedAclUrl a signed URL generated with {@link org.jets3t.service.S3Service#createSignedUrl(String, String, String, String, java.util.Map, org.jets3t.service.security.ProviderCredentials, long, boolean)}.
+     * @param bucketName
+     * @param signedAclUrl a signed URL generated with {@link org.jets3t.service.S3Service#createSignedUrl(String, String, String, String, Map, ProviderCredentials, long, boolean)}.
      * @return the AccessControlList settings of the object in S3.
      * @throws org.jets3t.service.ServiceException
-     *
      */
-    public AccessControlList getObjectAclWithSignedUrl(String signedAclUrl)
+    public AccessControlList getObjectAclWithSignedUrl(String bucketName, String signedAclUrl)
             throws ServiceException {
         HttpGet httpMethod = new HttpGet(signedAclUrl);
 
-        HttpResponse httpResponse = performRequest(httpMethod, new int[]{200});
+        HttpResponse httpResponse = performRequest(bucketName, httpMethod, new int[]{200});
         return getXmlResponseSaxParser()
                 .parseAccessControlListResponse(
                         new HttpMethodReleaseInputStream(httpResponse)).getAccessControlList();
@@ -2480,12 +2472,12 @@ public abstract class RestStorageService extends StorageService implements JetS3
      * Sets an object's ACL details using a pre-signed PUT URL generated for that object.
      * This method is an implementation of the interface {@link org.jets3t.service.utils.signedurl.SignedUrlHandler}.
      *
-     * @param signedAclUrl a signed URL generated with {@link org.jets3t.service.S3Service#createSignedUrl(String, String, String, String, java.util.Map, org.jets3t.service.security.ProviderCredentials, long, boolean)}.
+     * @param bucketName
+     * @param signedAclUrl a signed URL generated with {@link org.jets3t.service.S3Service#createSignedUrl(String, String, String, String, Map, ProviderCredentials, long, boolean)}.
      * @param acl          the ACL settings to apply to the object represented by the signed URL.
      * @throws org.jets3t.service.ServiceException
-     *
      */
-    public void putObjectAclWithSignedUrl(String signedAclUrl, AccessControlList acl) throws ServiceException {
+    public void putObjectAclWithSignedUrl(String bucketName, String signedAclUrl, AccessControlList acl) throws ServiceException {
         HttpPut putMethod = new HttpPut(signedAclUrl);
 
         if(acl != null) {
@@ -2500,13 +2492,13 @@ public abstract class RestStorageService extends StorageService implements JetS3
             }
         }
 
-        HttpResponse httpResponse = performRequest(putMethod, new int[]{200});
+        HttpResponse httpResponse = performRequest(bucketName, putMethod, new int[]{200});
 
         // Consume response data and release connection.
         releaseConnection(httpResponse);
     }
 
-    private S3Object getObjectWithSignedUrlImpl(String signedGetOrHeadUrl, boolean headOnly)
+    private S3Object getObjectWithSignedUrlImpl(String bucketName, String signedGetOrHeadUrl, boolean headOnly)
             throws ServiceException {
         String s3Endpoint = this.getEndpoint();
 
@@ -2518,7 +2510,7 @@ public abstract class RestStorageService extends StorageService implements JetS3
             httpMethod = new HttpGet(signedGetOrHeadUrl);
         }
 
-        HttpResponse httpResponse = performRequest(httpMethod, new int[]{200});
+        HttpResponse httpResponse = performRequest(bucketName, httpMethod, new int[]{200});
 
         Map<String, Object> map = new HashMap<String, Object>();
         map.putAll(convertHeadersToMap(httpResponse.getAllHeaders()));

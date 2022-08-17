@@ -209,14 +209,14 @@ public class CloudFrontService implements JetS3tRequestAuthorizer {
      * Sign the given HTTP method object using the AWS credentials provided
      * by {@link #getAWSCredentials()}.
      *
-     * @param httpMethod the request object
+     * @param bucketName
+     * @param httpMethod                          the request object
      * @param context
-     * @param ignoredForceRequestSignatureVersion
-     * ignored parameter relevant only for AWS4-HMAC-SHA256 request signing.
+     * @param ignoredForceRequestSignatureVersion ignored parameter relevant only for AWS4-HMAC-SHA256 request signing.
      * @throws ServiceException
      */
-    public void authorizeHttpRequest(HttpUriRequest httpMethod,
-            HttpContext context, String ignoredForceRequestSignatureVersion)
+    public void authorizeHttpRequest(String bucketName, HttpUriRequest httpMethod,
+                                     HttpContext context, String ignoredForceRequestSignatureVersion)
             throws ServiceException
     {
         String date = ServiceUtils.formatRfc822Date(getCurrentTimeWithOffset());
@@ -262,7 +262,7 @@ public class CloudFrontService implements JetS3tRequestAuthorizer {
         try {
             do {
                 completedWithoutRecoverableError = true;
-                authorizeHttpRequest(httpMethod, null, null);
+                authorizeHttpRequest(null, httpMethod, null, null);
                 response = httpClient.execute(httpMethod);
                 int responseCode = response.getStatusLine().getStatusCode();
 

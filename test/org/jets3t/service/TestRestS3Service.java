@@ -167,7 +167,7 @@ public class TestRestS3Service extends BaseStorageServiceTests {
 
             // Put the object in S3 using the signed URL (no AWS credentials required)
             RestS3Service anonymousS3Service = new RestS3Service(null);
-            anonymousS3Service.putObjectWithSignedUrl(signedPutUrl, object);
+            anonymousS3Service.putObjectWithSignedUrl(bucket.getName(), signedPutUrl, object);
 
             // Ensure the object was created.
             StorageObject objects[] = service.listObjects(bucketName, object.getKey(), null);
@@ -176,7 +176,7 @@ public class TestRestS3Service extends BaseStorageServiceTests {
             // Change the object's content-type and ensure the signed PUT URL disallows the put.
             object.setContentType("application/octet-stream");
             try {
-                anonymousS3Service.putObjectWithSignedUrl(signedPutUrl, object);
+                anonymousS3Service.putObjectWithSignedUrl(bucket.getName(), signedPutUrl, object);
                 fail("Should not be able to use a signed URL for an object with a changed content-type");
             } catch (ServiceException e) {
                 object.setContentType("text/html");
@@ -185,7 +185,7 @@ public class TestRestS3Service extends BaseStorageServiceTests {
             // Add an object header and ensure the signed PUT URL disallows the put.
             object.addMetadata(service.getRestMetadataPrefix() + "example-header-2", "example-value");
             try {
-                anonymousS3Service.putObjectWithSignedUrl(signedPutUrl, object);
+                anonymousS3Service.putObjectWithSignedUrl(bucket.getName(), signedPutUrl, object);
                 fail("Should not be able to use a signed URL for an object with changed metadata");
             } catch (ServiceException e) {
                 object.removeMetadata(service.getRestMetadataPrefix() + "example-header-2");
@@ -195,7 +195,7 @@ public class TestRestS3Service extends BaseStorageServiceTests {
             String originalName = object.getKey();
             object.setKey("Testing URL Signing 2");
             object.setDataInputStream(new ByteArrayInputStream(dataString.getBytes()));
-            object = anonymousS3Service.putObjectWithSignedUrl(signedPutUrl, object);
+            object = anonymousS3Service.putObjectWithSignedUrl(bucket.getName(), signedPutUrl, object);
             assertEquals("Ensure returned object key is renamed based on signed PUT URL",
                 originalName, object.getKey());
 
@@ -207,7 +207,7 @@ public class TestRestS3Service extends BaseStorageServiceTests {
                 expiryDate, false);
             objectWithoutETag.setDataInputStream(new ByteArrayInputStream(dataString.getBytes()));
             objectWithoutETag.setContentLength(dataString.getBytes().length);
-            anonymousS3Service.putObjectWithSignedUrl(objectWithoutETagSignedPutURL, objectWithoutETag);
+            anonymousS3Service.putObjectWithSignedUrl(bucket.getName(), objectWithoutETagSignedPutURL, objectWithoutETag);
             service.deleteObject(bucketName, objectWithoutETag.getKey());
 
             // Ensure we can't get the object with a normal URL.
@@ -291,7 +291,7 @@ public class TestRestS3Service extends BaseStorageServiceTests {
 
             // Put the object in S3 using the signed URL (no AWS credentials required)
             RestS3Service anonymousS3Service = new RestS3Service(null);
-            anonymousS3Service.putObjectWithSignedUrl(signedPutUrl, object);
+            anonymousS3Service.putObjectWithSignedUrl(bucket.getName(), signedPutUrl, object);
 
             // Ensure the object was created.
             StorageObject objects[] = service.listObjects(bucketName, object.getKey(), null);
@@ -300,7 +300,7 @@ public class TestRestS3Service extends BaseStorageServiceTests {
             // Change the object's content-type and ensure the signed PUT URL disallows the put.
             object.setContentType("application/octet-stream");
             try {
-                anonymousS3Service.putObjectWithSignedUrl(signedPutUrl, object);
+                anonymousS3Service.putObjectWithSignedUrl(bucket.getName(), signedPutUrl, object);
                 fail("Should not be able to use a signed URL for an object with a changed content-type");
             } catch (ServiceException e) {
                 object.setContentType("text/html");
@@ -309,7 +309,7 @@ public class TestRestS3Service extends BaseStorageServiceTests {
             // Add an object header and ensure the signed PUT URL disallows the put.
             object.addMetadata(service.getRestMetadataPrefix() + "example-header-2", "example-value");
             try {
-                anonymousS3Service.putObjectWithSignedUrl(signedPutUrl, object);
+                anonymousS3Service.putObjectWithSignedUrl(bucket.getName(), signedPutUrl, object);
                 fail("Should not be able to use a signed URL for an object with changed metadata");
             } catch (ServiceException e) {
                 object.removeMetadata(service.getRestMetadataPrefix() + "example-header-2");
@@ -319,7 +319,7 @@ public class TestRestS3Service extends BaseStorageServiceTests {
             String originalName = object.getKey();
             object.setKey("Testing URL Signing 2");
             object.setDataInputStream(new ByteArrayInputStream(dataString.getBytes()));
-            object = anonymousS3Service.putObjectWithSignedUrl(signedPutUrl, object);
+            object = anonymousS3Service.putObjectWithSignedUrl(bucket.getName(), signedPutUrl, object);
             assertEquals("Ensure returned object key is renamed based on signed PUT URL",
                 originalName, object.getKey());
 
@@ -337,7 +337,7 @@ public class TestRestS3Service extends BaseStorageServiceTests {
             );
             objectWithoutETag.setDataInputStream(new ByteArrayInputStream(dataString.getBytes()));
             objectWithoutETag.setContentLength(dataString.getBytes().length);
-            anonymousS3Service.putObjectWithSignedUrl(objectWithoutETagSignedPutURL, objectWithoutETag);
+            anonymousS3Service.putObjectWithSignedUrl(bucket.getName(), objectWithoutETagSignedPutURL, objectWithoutETag);
             service.deleteObject(bucketName, objectWithoutETag.getKey());
 
             // Ensure we can't get the object with a normal URL.

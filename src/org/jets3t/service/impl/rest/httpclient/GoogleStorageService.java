@@ -438,16 +438,15 @@ public class GoogleStorageService extends RestStorageService {
      * Authorizes an HTTP/S request using the standard HMAC approach or OAuth 2,
      * whichever technique is appropriate.
      *
-     * @param httpMethod
-     * the request object
+     * @param bucketName
+     * @param httpMethod                          the request object
      * @param context
-     * @param ignoredForceRequestSignatureVersion
-     * ignored parameter relevant only for AWS4-HMAC-SHA256 request signing.
+     * @param ignoredForceRequestSignatureVersion ignored parameter relevant only for AWS4-HMAC-SHA256 request signing.
      * @throws ServiceException
      */
     @Override
-    public void authorizeHttpRequest(HttpUriRequest httpMethod,
-        HttpContext context, String ignoredForceRequestSignatureVersion)
+    public void authorizeHttpRequest(String bucketName, HttpUriRequest httpMethod,
+                                     HttpContext context, String ignoredForceRequestSignatureVersion)
             throws ServiceException
     {
         if (getProviderCredentials() instanceof OAuth2Credentials) {
@@ -468,7 +467,7 @@ public class GoogleStorageService extends RestStorageService {
             httpMethod.setHeader("Authorization", "OAuth " + tokens.getAccessToken());
             httpMethod.setHeader("x-goog-api-version", "2");
         } else {
-            super.authorizeHttpRequest(httpMethod, context, ignoredForceRequestSignatureVersion);
+            super.authorizeHttpRequest(bucketName, httpMethod, context, ignoredForceRequestSignatureVersion);
         }
     }
 

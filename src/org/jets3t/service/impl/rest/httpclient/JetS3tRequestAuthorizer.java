@@ -25,7 +25,7 @@ import org.jets3t.service.ServiceException;
 public interface JetS3tRequestAuthorizer {
 
     public void authorizeHttpRequest(
-        HttpUriRequest httpMethod, HttpContext context, String forceRequestSignatureVersion)
+            String bucketName, HttpUriRequest httpMethod, HttpContext context, String forceRequestSignatureVersion)
         throws ServiceException;
 
 }

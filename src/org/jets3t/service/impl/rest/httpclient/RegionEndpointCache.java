@@ -36,7 +36,7 @@ public class RegionEndpointCache {
     }
 
     public String putRegionForBucketName(String bucketName, String region) {
-        if (region != null) {
+        if (bucketName != null && region != null) {
             return bucketNameToRegionMap.put(bucketName, region);
         } else {
             return null;
