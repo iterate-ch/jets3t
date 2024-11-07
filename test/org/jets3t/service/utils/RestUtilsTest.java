@@ -23,4 +23,8 @@ public class RestUtilsTest extends TestCase {
         assertEquals("a/p", RestUtils.encodeUrlPath("a/p", "/"));
         assertEquals("a/p/", RestUtils.encodeUrlPath("a/p/", "/"));
     }
+
+    public void testEncodeEmoji() {
+        assertEquals("a/%F0%9F%9A%80", RestUtils.encodeUrlPath("a/\uD83D\uDE80", "/"));
+    }
 }
