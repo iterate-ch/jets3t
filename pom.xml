@@ -28,8 +28,7 @@ limitations under the License.
     <url>https://bitbucket.org/dkocher/jets3t/overview</url>
     <inceptionYear>2006</inceptionYear>
     <scm>
-        <connection>scm:git:https://github.com/iterate-ch/jets3t.git</connection>
-        <developerConnection>scm:git:https://github.com/iterate-ch/jets3t.git</developerConnection>
+        <connection>scm:git:git@github.com:iterate-ch/jets3t.git</connection>
         <url>https://github.com/iterate-ch/jets3t</url>
         <tag>HEAD</tag>
     </scm>
