@@ -29,6 +29,7 @@ limitations under the License.
     <inceptionYear>2006</inceptionYear>
     <scm>
         <connection>scm:git:git@github.com:iterate-ch/jets3t.git</connection>
+        <developerConnection>scm:git:git@github.com:iterate-ch/jets3t.git</developerConnection>
         <url>https://github.com/iterate-ch/jets3t</url>
         <tag>HEAD</tag>
     </scm>
