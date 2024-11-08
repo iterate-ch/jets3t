@@ -18,33 +18,10 @@
  */
 package org.jets3t.service.utils;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URL;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
-import java.text.ParseException;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.SortedMap;
-import java.util.StringTokenizer;
-import java.util.TreeMap;
-
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLContext;
-
 import org.apache.commons.httpclient.contrib.proxy.PluginProxyUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpHost;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpResponse;
+import org.apache.http.*;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.NTCredentials;
@@ -78,6 +55,16 @@ import org.jets3t.service.Constants;
 import org.jets3t.service.Jets3tProperties;
 import org.jets3t.service.impl.rest.httpclient.JetS3tRequestAuthorizer;
 import org.jets3t.service.io.UnrecoverableIOException;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URL;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.text.ParseException;
+import java.util.*;
 
 /**
  * Utilities useful for REST/HTTP S3Service implementations.
@@ -125,28 +112,16 @@ public class RestUtils {
      * encoded URL.
      */
     public static String encodeUrlString(String path) {
-        StringBuilder result = new StringBuilder();
         try {
-            for (int i = 0; i < path.length(); i++) {
-                char ch = path.charAt(i);
-                switch (ch) {
-                    case ' ':
-                        result.append("%20");
-                        break;
-                    case '*':
-                        result.append("%2A");
-                        break;
-                    case '~':
-                        result.append("~");
-                        break;
-                    default:
-                        result.append(URLEncoder.encode(Character.toString(ch), Constants.DEFAULT_ENCODING));
-                }
-            }
-        } catch (UnsupportedEncodingException e) {
+            final String encoded = URLEncoder.encode(path, Constants.DEFAULT_ENCODING);
+            return encoded
+                    .replaceAll("\\+", "%20")
+                    .replaceAll("\\*", "%2A")
+                    .replaceAll("%7E", "~");
+        }
+        catch(UnsupportedEncodingException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
-        return result.toString();
     }
 
     /**

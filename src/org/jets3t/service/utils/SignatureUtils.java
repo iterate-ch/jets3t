@@ -401,7 +401,7 @@ public class SignatureUtils {
             canonicalStringBuf.append("/");
         } else {
             canonicalStringBuf.append(
-                SignatureUtils.awsV4EncodeURI(absolutePath, false));
+                SignatureUtils.awsV4EncodeURI(absolutePath));
         }
         canonicalStringBuf.append("\n");
 
@@ -584,33 +584,10 @@ public class SignatureUtils {
      * Slightly modified version of "uri-encode" from:
      * {@link "http://docs.aws.amazon.com/AmazonS3/latest/API/sig-v4-header-based-auth.html"}
      *
-     * @param input
-     * URI or URI-fragment string to encode.
-     * @param encodeSlash
-     * true if slash (/) character should be encoded.
+     * @param input URI or URI-fragment string to encode.
      * @return URI string encoded per recommendations from AWS.
      */
-    public static String awsV4EncodeURI(CharSequence input, boolean encodeSlash) {
-        StringBuilder result = new StringBuilder();
-        for (int i = 0; i < input.length(); i++) {
-            char ch = input.charAt(i);
-            if ((ch >= 'A' && ch <= 'Z')
-                || (ch >= 'a' && ch <= 'z')
-                || (ch >= '0' && ch <= '9')
-                || ch == '_'
-                || ch == '-'
-                || ch == '~'
-                || ch == '.')
-            {
-                result.append(ch);
-            } else if (ch == '/') {
-                result.append(encodeSlash ? "%2F" : ch);
-            } else {
-                String hex = RestUtils.encodeUrlString(String.valueOf(ch));
-                result.append(hex);
-            }
-        }
-        return result.toString();
+    public static String awsV4EncodeURI(String input) {
+        return RestUtils.encodeUrlPath(input, "/");
     }
-
 }
