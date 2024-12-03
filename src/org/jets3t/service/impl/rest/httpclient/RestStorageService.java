@@ -1731,7 +1731,6 @@ public abstract class RestStorageService extends StorageService implements JetS3
         HttpEntity requestEntity = null;
 
         if(location != null && !"US".equalsIgnoreCase(location)) {
-            metadata.put(BaseStorageItem.METADATA_HEADER_CONTENT_TYPE, "text/xml");
             try {
                 CreateBucketConfiguration config = new CreateBucketConfiguration(location);
                 String configXml = config.toXml();
@@ -1746,7 +1745,7 @@ public abstract class RestStorageService extends StorageService implements JetS3
             }
         }
 
-        Map<String, Object> map = createObjectImpl(bucketName, null, null,
+        Map<String, Object> map = createObjectImpl(bucketName, null, "text/xml",
                 requestEntity, metadata, null, acl, null, null, null);
 
         StorageBucket bucket = newBucket();
