@@ -1459,7 +1459,7 @@ public abstract class RestStorageService extends StorageService implements JetS3
 
         String bucketName = ""; // Root path of S3 service lists the user's buckets.
         HttpResponse httpResponse = performRestGet(bucketName, null, null, headers);
-        String contentType = httpResponse.getFirstHeader(BaseStorageItem.METADATA_HEADER_CONTENT_TYPE).getValue();
+        String contentType = httpResponse.containsHeader(BaseStorageItem.METADATA_HEADER_CONTENT_TYPE) ? httpResponse.getFirstHeader(BaseStorageItem.METADATA_HEADER_CONTENT_TYPE).getValue() : Mimetypes.MIMETYPE_XML;
 
         if(!isXmlContentType(contentType)) {
             throw new ServiceException("Expected XML document response from S3 but received content type " +
