@@ -1,18 +1,16 @@
 package org.jets3t.service.security;
 
-import java.io.IOException;
-import java.text.ParseException;
-import java.util.Date;
-
-import org.codehaus.jackson.JsonProcessingException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import junit.framework.TestCase;
 import org.jets3t.service.utils.ServiceUtils;
 
-import junit.framework.TestCase;
+import java.io.IOException;
+import java.text.ParseException;
 
 public class AWSEC2IAMSessionCredentialsTest extends TestCase {
 
     public void testParseEC2InstanceDataSuccess()
-        throws JsonProcessingException, IOException, ParseException
+        throws IOException, ParseException
     {
         String iamRoleData =
             "{\n" +
