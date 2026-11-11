@@ -78,6 +78,7 @@ import org.jets3t.service.utils.SignatureUtils;
 
 import com.jamesmurty.utils.XMLBuilder;
 
+import static org.jets3t.service.model.BaseStorageItem.isMatchingMetadataName;
 import static org.jets3t.service.model.StorageObject.METADATA_HEADER_SERVER_SIDE_ENCRYPTION;
 import static org.jets3t.service.model.StorageObject.METADATA_HEADER_SERVER_SIDE_ENCRYPTION_KMS_KEY_ID;
 
@@ -873,10 +874,10 @@ public abstract class RestStorageService extends StorageService implements JetS3
      * @param headers Request or response HTTP headers
      * @return Map by header name
      */
-    private Map<String, Object> convertHeadersToMap(Header[] headers) {
+    private static Map<String, Object> convertHeadersToMap(Header[] headers) {
         Map<String, Object> map = new HashMap<String, Object>();
         for(int i = 0; headers != null && i < headers.length; i++) {
-            map.put(headers[i].getName(), headers[i].getValue());
+            map.put(headers[i].getName().toLowerCase(Locale.ENGLISH), headers[i].getValue());
         }
         return map;
     }
@@ -1969,6 +1970,7 @@ public abstract class RestStorageService extends StorageService implements JetS3
         Map<String, Object> map = new HashMap<String, Object>();
         map.putAll(metadata); // Keep existing metadata.
         map.putAll(convertHeadersToMap(httpResponse.getAllHeaders()));
+        map.keySet().removeIf(header -> isMatchingMetadataName(header, StorageObject.METADATA_HEADER_CONTENT_LENGTH));
         map.put(StorageObject.METADATA_HEADER_CONTENT_LENGTH, String.valueOf(methodAndByteCount.getByteCount()));
         map = ServiceUtils.cleanRestMetadataMap(
                 map, this.getRestHeaderPrefix(), this.getRestMetadataPrefix());
