@@ -65,7 +65,7 @@ limitations under the License.
     <parent>
         <groupId>org.sonatype.oss</groupId>
         <artifactId>oss-parent</artifactId>
-        <version>7</version>
+        <version>9</version>
     </parent>
     <build>
         <extensions>
