@@ -71,9 +71,23 @@ public class XmlResponsesSaxParser {
     public XmlResponsesSaxParser(Jets3tProperties properties, boolean returnGoogleStorageObjects)
         throws ServiceException
     {
+        this(properties, returnGoogleStorageObjects, ServiceUtils.loadXMLReader());
+    }
+
+    /**
+     * Constructs the XML SAX parser with a preconfigured reader, allowing callers to
+     * apply their own hardening (for example disabling DOCTYPE declarations).
+     *
+     * @param properties
+     * the JetS3t properties that will be applied when parsing XML documents.
+     * @param xr
+     * the XML reader used to parse documents.
+     */
+    public XmlResponsesSaxParser(Jets3tProperties properties, boolean returnGoogleStorageObjects, XMLReader xr)
+    {
         this.properties = properties;
         this.isGoogleStorageMode = returnGoogleStorageObjects;
-        this.xr = ServiceUtils.loadXMLReader();
+        this.xr = xr;
     }
 
     protected StorageBucket newBucket() {
