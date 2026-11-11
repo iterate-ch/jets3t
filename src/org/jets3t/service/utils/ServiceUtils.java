@@ -513,7 +513,7 @@ public class ServiceUtils {
 
                 // Recognize user/headers metadata items
                 String keyStr = (key != null ? key.toString() : "");
-                completeMetadataMap.put(keyStr, value);
+                completeMetadataMap.put(keyStr.toLowerCase(Locale.ENGLISH), value);
 
                 if (keyStr.toLowerCase().startsWith(userMetadataPrefix)) {
                     key = keyStr.substring(userMetadataPrefix.length(), keyStr.length());
@@ -524,14 +524,14 @@ public class ServiceUtils {
                     }
                 } else if (keyStr.toLowerCase().startsWith(serviceMetadataPrefix)) {
                     key = keyStr.substring(serviceMetadataPrefix.length(), keyStr.length());
-                    serviceMetadataMap.put(key, value);
+                    serviceMetadataMap.put(key.toLowerCase(Locale.ENGLISH), value);
                     if (log.isDebugEnabled()) {
                         log.debug("Removed header prefix "
                             + serviceMetadataPrefix + " from key: " + keyStr + "=>" + key);
                     }
                 } else if (RestUtils.HTTP_HEADER_METADATA_NAMES.contains(keyStr.toLowerCase(Locale.ENGLISH))) {
                     key = keyStr;
-                    httpMetadataMap.put(key, value);
+                    httpMetadataMap.put(key.toLowerCase(Locale.ENGLISH), value);
                     if (log.isDebugEnabled()) {
                         log.debug("Leaving HTTP header item unchanged: " + key + "=" + value);
                     }
@@ -541,7 +541,7 @@ public class ServiceUtils {
                     || "Content-Range".equalsIgnoreCase(keyStr))
                 {
                     key = keyStr;
-                    httpMetadataMap.put(key, value);
+                    httpMetadataMap.put(key.toLowerCase(Locale.ENGLISH), value);
                     if (log.isDebugEnabled()) {
                         log.debug("Leaving header item unchanged: " + key + "=" + value);
                     }

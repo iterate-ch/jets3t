@@ -150,7 +150,7 @@ public abstract class BaseStorageItem {
      * Return true if the given string Metadata item names are equivalent, i.e.
      * either both are null, or both are a case-insensitive match.
      */
-    protected boolean isMatchingMetadataName(String name1, String name2) {
+    public static boolean isMatchingMetadataName(String name1, String name2) {
        if (name1 == null && name2 == null) {
            return true;
        }
@@ -170,7 +170,7 @@ public abstract class BaseStorageItem {
      * the value of the first item found with the given case-insensitive name
      * in the map, or null if no such name exists in the map
      */
-    protected Object getMetadataCaseInsensitiveFromMap(
+    public static Object getMetadataCaseInsensitiveFromMap(
         String name, Map<String, Object> map)
     {
         for (Entry<String, Object> entry: map.entrySet()) {
